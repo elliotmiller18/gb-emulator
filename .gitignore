@@ -1,0 +1,5 @@
+emulator
+.vscode/
+roms/
+*.o
+*.txt
