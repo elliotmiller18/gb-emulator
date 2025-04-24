@@ -1,8 +1,10 @@
 #ifndef REGISTER_H
 #define REGISTER_H
 
+constexpr int NUM_REGISTERS = 6;
+
+
 #include <array>
-#include <utils.h>
 
 enum Register16 {
     AF,
@@ -36,10 +38,10 @@ private:
 public:
     Registers();
     ~Registers();
-    void write_reg(Register16 reg, uint16_t val);
-    void write_half_reg(Register8 reg, uint8_t val);
-    uint16_t read_reg(Register16 reg);
-    uint8_t read_half_reg(Register8 reg);
+    void write(Register16 reg, uint16_t val);
+    void write_half(Register8 reg, uint8_t val);
+    uint16_t read(Register16 reg);
+    uint8_t read_half(Register8 reg);
     /// Returns the full register that a half register is a part of.
     Register16 half_reg_to_reg(Register8 reg);
     void set_flag(Flag flag, bool value);

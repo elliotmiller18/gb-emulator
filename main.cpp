@@ -1,5 +1,4 @@
 #include <vector>
-#include "utils.h"
 #include "rom.h"
 
 int main() {

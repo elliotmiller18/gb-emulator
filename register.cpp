@@ -6,11 +6,11 @@ Registers::Registers() {}
 
 Registers::~Registers() {}
 
-void Registers::write_reg(Register16 reg, uint16_t val) {
+void Registers::write(Register16 reg, uint16_t val) {
     registers[reg] = val;
 }
 
-void Registers::write_half_reg(Register8 reg, uint8_t val) {
+void Registers::write_half(Register8 reg, uint8_t val) {
     Register16 full = half_reg_to_reg(reg);
     switch(reg) {
         // high half registers
@@ -34,11 +34,11 @@ void Registers::write_half_reg(Register8 reg, uint8_t val) {
     }
 }
 
-uint16_t Registers::read_reg(Register16 reg) {
+uint16_t Registers::read(Register16 reg) {
     return registers[reg];
 }
 
-uint8_t Registers::read_half_reg(Register8 reg) {
+uint8_t Registers::read_half(Register8 reg) {
     Register16 full = half_reg_to_reg(reg);
     switch(reg) {
         // high half registers
