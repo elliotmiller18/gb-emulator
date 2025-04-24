@@ -3,7 +3,7 @@ CXX := g++
 CXXFLAGS := -Wall -Wextra -std=c++17 -I.
 
 # Source files
-SRCS := rom.cpp main.cpp cpu.cpp register.cpp
+SRCS := *.cpp
 OBJS := $(SRCS:.cpp=.o)
 
 # Output binary
