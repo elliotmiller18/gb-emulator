@@ -6,7 +6,7 @@
 #include <array>
 
 /// the value that programs expect the SP to be initialized to
-constexpr int STACK_STARTING_VALUE = 0xFFFE;
+constexpr uint16_t STACK_STARTING_VALUE = 0xFFFE;
 /// the pointer to the top of VRAM
 constexpr int VRAM_TOP = 0x9FFF;
 
