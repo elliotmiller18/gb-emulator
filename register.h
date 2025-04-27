@@ -1,10 +1,10 @@
 #ifndef REGISTER_H
 #define REGISTER_H
 
-constexpr int NUM_REGISTERS = 6;
-
-
+#include <variant>
 #include <array>
+
+constexpr int NUM_REGISTERS = 6;
 
 enum Register16 {
     AF,
@@ -32,20 +32,26 @@ enum Flag {
     c,
 };
 
+/// A variant between Register16 and Register8.
+using RegisterOpt = std::variant<Register16, Register8>;
+/// Any binary argument, so a 16/8 bit value or a full/half register.
+using BinOpt = std::variant<Register16, Register8, uint16_t, uint8_t>;
+/// Any 16 bit argument, typically used for addressing.
+using BinOpt16 = std::variant<Register16, uint16_t>;
+
 class Registers {
 private:
     std::array<uint16_t, NUM_REGISTERS> registers;
 public:
     Registers();
     ~Registers();
-    void write(Register16 reg, uint16_t val);
-    void write_half(Register8 reg, uint8_t val);
-    uint16_t read(Register16 reg);
-    uint8_t read_half(Register8 reg);
+    void write(RegisterOpt reg, BinOpt val);
+    uint16_t read(RegisterOpt reg);
     /// Returns the full register that a half register is a part of.
     Register16 half_reg_to_reg(Register8 reg);
     void set_flag(Flag flag, bool value);
     bool get_flag(Flag flag);
+    uint16_t unpack_binopt(BinOpt val);
 };
 
 #endif

@@ -1,60 +1,50 @@
 #include "utils.h"
 #include "register.h"
 #include <iostream>
+#include <variant>
 
 Registers::Registers() {}
 
 Registers::~Registers() {}
 
-void Registers::write(Register16 reg, uint16_t val) {
-    registers[reg] = val;
+uint16_t Registers::unpack_binopt(BinOpt val) {
+    // return the result of the lambda passed to std::visit
+    return std::visit([this](auto&& v) -> uint16_t {
+        // get the raw type of whatever val is holding
+        using T = std::decay_t<decltype(v)>;
+        if constexpr (std::is_same_v<T, Register16>) {return registers[v];}
+        else if constexpr (std::is_same_v<T, Register8>) {return registers[half_reg_to_reg(v)];}
+        // we know it's either a u8 or u16, both of which will be fine to use as a u16
+        return v;
+    }, val);
 }
 
-void Registers::write_half(Register8 reg, uint8_t val) {
-    Register16 full = half_reg_to_reg(reg);
-    switch(reg) {
-        // high half registers
-        case A:
-        case B:
-        case D:
-        case H:
-            registers[full] &= LOWER_HALF_MASK;
-            registers[full] |= (static_cast<uint16_t>(val) << 8);
-            break;
-        // low half registers
-        case C:
-        case E:
-        case L:
-            registers[full] &= UPPER_HALF_MASK;
-            registers[full] |= val;
-            break;
-        default:
-            std::cerr << "Unrecognized half register, could not write " << val << std::endl; 
-            exit(1);
-    }
+void Registers::write(RegisterOpt reg, BinOpt val) {
+    uint16_t unpacked_value = unpack_binopt(val);
+    Register16 target;
+    if (target = *std::get_if<Register16>(&reg)) {}
+    // else assign target to whatever 16 bit register half corresponds to
+    else if (Register8 half = *std::get_if<Register8>(&reg)) {target = half_reg_to_reg(half);} 
+    registers[target] = unpacked_value;
 }
 
-uint16_t Registers::read(Register16 reg) {
-    return registers[reg];
-}
-
-uint8_t Registers::read_half(Register8 reg) {
-    Register16 full = half_reg_to_reg(reg);
-    switch(reg) {
-        // high half registers
-        case A:
-        case B:
-        case D:
-        case H:
-            return (registers[full] & UPPER_HALF_MASK) >> 8;
-        // half registers
-        case C:
-        case E:
-        case L:
-            return registers[full] & LOWER_HALF_MASK;
-        default:
-            std::cerr << "Unrecognized half register, could not read." << std::endl; 
-            exit(1);
+uint16_t Registers::read(RegisterOpt reg) {
+    // if it's a register16 return the 16 bit value at 
+    if (Register16 unpacked_reg = *std::get_if<Register16>(&reg)) { return registers[unpacked_reg]; } 
+    else if (Register8 unpacked_reg = *std::get_if<Register8>(&reg)) {
+        switch(unpacked_reg) {
+            // high half registers
+            case A:
+            case B:
+            case D:
+            case H:
+                return registers[half_reg_to_reg(unpacked_reg)] >> 8;
+            // low half registers
+            case C:
+            case E:
+            case L:
+                return (registers[half_reg_to_reg(unpacked_reg)] & LOWER_HALF_MASK);
+        }
     }
 }
 
@@ -71,9 +61,6 @@ Register16 Registers::half_reg_to_reg(Register8 reg) {
         case H:
         case L:
             return HL;
-        default:
-            std::cerr << "Unrecognized half register.";
-            exit(1);
     }
 }
 

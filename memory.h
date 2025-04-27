@@ -11,16 +11,12 @@ class Memory
 private:
     std::array<uint8_t, MEMORY_SIZE> memory;
     Registers& registers;
-    bool __write(uint16_t addr, uint8_t value);
+    uint16_t unpack_address(BinOpt16 addr);
 public:
     Memory(Registers& registers);
     ~Memory();
-    uint8_t read(uint16_t addr);
-    uint8_t read(Register16 reg);
-    bool write(uint16_t addr, uint8_t value);
-    bool write(uint16_t addr, Register8 reg);
-    bool write(Register16 addr, uint8_t value);
-    bool write(Register16 addr, Register8 reg);
+    uint16_t read(BinOpt16 addr);
+    bool write(BinOpt16 addr, BinOpt value);
 };
 
 #endif

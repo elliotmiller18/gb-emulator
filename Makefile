@@ -1,9 +1,9 @@
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -Wall -Wextra -std=c++17 -I.
+CXXFLAGS := -Wall -Wextra -std=c++20 -I.
 
 # Source files
-SRCS := *.cpp
+SRCS := $(shell find . -type f -name "*.cpp")
 OBJS := $(SRCS:.cpp=.o)
 
 # Output binary

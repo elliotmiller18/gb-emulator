@@ -5,9 +5,9 @@
 #include "register.h"
 #include <array>
 
-// the value that programs expect the SP to be initialized to
+/// the value that programs expect the SP to be initialized to
 constexpr int STACK_STARTING_VALUE = 0xFFFE;
-// the pointer to the top of VRAM
+/// the pointer to the top of VRAM
 constexpr int VRAM_TOP = 0x9FFF;
 
 class Cpu
@@ -15,6 +15,7 @@ class Cpu
 private:
     Registers registers;
     Rom& rom;
+    bool boot();
 
 public:
     Cpu(Rom& rom);
