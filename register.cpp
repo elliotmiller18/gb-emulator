@@ -8,14 +8,15 @@ Registers::Registers() {}
 Registers::~Registers() {}
 
 uint16_t Registers::unpack_binopt(BinOpt val) {
-    // return the result of the lambda passed to std::visit
-    return std::visit([this](auto&& v) -> uint16_t {
-        // get the raw type of whatever val is holding
-        using T = std::decay_t<decltype(v)>;
-        if constexpr (std::is_same_v<T, Register16>) {return registers[v];}
-        else if constexpr (std::is_same_v<T, Register8>) {return registers[half_reg_to_reg(v)];}
-        // we know it's either a u8 or u16, both of which will be fine to use as a u16
-        return v;
+    // first unpack val into either a BinOpt16 or BinOpt8
+    return std::visit([this](auto&& inner) -> uint16_t {
+        // unpack the inner value into either a register or the raw value
+        return std::visit([this](auto&& v) -> uint16_t {
+            using T = std::decay_t<decltype(v)>;
+            if constexpr (std::is_same_v<T,Register16>)     return registers[v];
+            else if constexpr (std::is_same_v<T,Register8>) return registers[half_reg_to_reg(v)];
+            else                                            return v;
+        }, inner);
     }, val);
 }
 
