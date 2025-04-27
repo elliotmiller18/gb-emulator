@@ -38,6 +38,8 @@ using RegisterOpt = std::variant<Register16, Register8>;
 using BinOpt = std::variant<Register16, Register8, uint16_t, uint8_t>;
 /// Any 16 bit argument, typically used for addressing.
 using BinOpt16 = std::variant<Register16, uint16_t>;
+// Any 8 bit argument
+using BinOpt8 = std::variant<Register8, uint8_t>;
 
 class Registers {
 private:
