@@ -2,6 +2,7 @@
 #include "register.h"
 #include <iostream>
 #include <variant>
+#include <cassert>
 
 Registers::Registers() {}
 
@@ -10,42 +11,75 @@ Registers::~Registers() {}
 uint16_t Registers::unpack_binopt(BinOpt val) {
     // first unpack val into either a BinOpt16 or BinOpt8
     return std::visit([this](auto&& inner) -> uint16_t {
-        // unpack the inner value into either a register or the raw value
-        return std::visit([this](auto&& v) -> uint16_t {
-            using T = std::decay_t<decltype(v)>;
-            if constexpr (std::is_same_v<T,Register16>)     return registers[v];
-            else if constexpr (std::is_same_v<T,Register8>) return registers[half_reg_to_reg(v)];
-            else                                            return v;
-        }, inner);
+        using T = decltype(inner);
+        if constexpr (std::is_same_v<T, BinOpt16>)     return unpack_binopt16(inner);
+        else if constexpr (std::is_same_v<T, BinOpt8>) return static_cast<uint16_t>(unpack_binopt8(inner));
+        else {
+            std::cerr << "Unrecognized binary option type";
+            exit(1);
+        }
     }, val);
 }
 
-void Registers::write(RegisterOpt reg, BinOpt val) {
-    uint16_t unpacked_value = unpack_binopt(val);
-    Register16 target;
-    if (target = *std::get_if<Register16>(&reg)) {}
-    // else assign target to whatever 16 bit register half corresponds to
-    else if (Register8 half = *std::get_if<Register8>(&reg)) {target = half_reg_to_reg(half);} 
-    registers[target] = unpacked_value;
+uint8_t Registers::unpack_binopt16(BinOpt16 val) {
+    if(Register16* reg = std::get_if<Register16>(&val))  return registers[*reg]; 
+    else if(uint16_t* imm = std::get_if<uint16_t>(&val)) return *imm;
+    else {
+        std::cerr << "Invalid BinOpt16 arg"; 
+        exit(0);
+    }   
 }
 
-uint16_t Registers::read(RegisterOpt reg) {
-    // if it's a register16 return the 16 bit value at 
-    if (Register16 unpacked_reg = *std::get_if<Register16>(&reg)) { return registers[unpacked_reg]; } 
-    else if (Register8 unpacked_reg = *std::get_if<Register8>(&reg)) {
-        switch(unpacked_reg) {
-            // high half registers
-            case A:
-            case B:
-            case D:
-            case H:
-                return registers[half_reg_to_reg(unpacked_reg)] >> 8;
-            // low half registers
-            case C:
-            case E:
-            case L:
-                return (registers[half_reg_to_reg(unpacked_reg)] & LOWER_HALF_MASK);
-        }
+uint8_t Registers::unpack_binopt8(BinOpt8 val) {
+    if(Register8* reg = std::get_if<Register8>(&val))  return static_cast<uint8_t>(registers[half_reg_to_reg(*reg)]); 
+    else if(uint8_t* imm = std::get_if<uint8_t>(&val)) return *imm;
+    else {
+        std::cerr << "Invalid BinOpt8 arg"; 
+        exit(0);
+    }                                              
+}
+
+void Registers::write(Register16 reg, BinOpt16 val) {
+    uint16_t unpacked_value = unpack_binopt16(val);
+    registers[reg] = unpacked_value;
+}
+
+void Registers::write_half(Register8 reg, BinOpt8 val) {
+    uint8_t unpacked_value = unpack_binopt8(val);
+    switch(reg) {
+        // high half registers
+        case A:
+        case B:
+        case D:
+        case H:
+            registers[half_reg_to_reg(reg)] &= LOWER_HALF_MASK;
+            registers[half_reg_to_reg(reg)] |= (static_cast<uint16_t>(unpacked_value) << 8);
+        // low half registers
+        case C:
+        case E:
+        case L:
+            registers[half_reg_to_reg(reg)] &= UPPER_HALF_MASK;
+            registers[half_reg_to_reg(reg)] |= unpacked_value;
+    }
+}
+
+uint16_t Registers::read(Register16 reg) {
+    return registers[reg];
+}
+
+uint8_t Registers::read_half(Register8 reg) {
+    switch(reg) {
+        // high half registers
+        case A:
+        case B:
+        case D:
+        case H:
+            return static_cast<uint8_t>(registers[half_reg_to_reg(reg)] >> 8);
+        // low half registers
+        case C:
+        case E:
+        case L:
+            return static_cast<uint8_t>(registers[half_reg_to_reg(reg)]);
     }
 }
 

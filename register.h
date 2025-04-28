@@ -47,13 +47,17 @@ private:
 public:
     Registers();
     ~Registers();
-    void write(RegisterOpt reg, BinOpt val);
-    uint16_t read(RegisterOpt reg);
+    uint16_t unpack_binopt(BinOpt val);
+    uint8_t unpack_binopt8(BinOpt8 val);
+    uint8_t unpack_binopt16(BinOpt16 val);
+    void write(Register16 reg, BinOpt16 val);
+    void write_half(Register8 reg, BinOpt8 val);
+    uint16_t read(Register16 reg);
+    uint8_t read_half(Register8 reg);
     /// Returns the full register that a half register is a part of.
     Register16 half_reg_to_reg(Register8 reg);
     void set_flag(Flag flag, bool value);
     bool get_flag(Flag flag);
-    uint16_t unpack_binopt(BinOpt val);
 };
 
 #endif

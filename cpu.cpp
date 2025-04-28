@@ -3,10 +3,6 @@
 #include "register.h"
 #include <iostream>
 
-Cpu::Cpu(Rom& rom) : rom(rom) {}
-
-Cpu::~Cpu() {}
-
 /// @brief Sets the internal state of the cpu like the boot rom.
 /// @returns Boot success.
 bool Cpu::boot() {
@@ -24,11 +20,17 @@ bool Cpu::boot() {
 }
 
 uint16_t Cpu::excl_or(BinOpt8 arg) {
-    uint16_t unpacked = registers.unpack_binopt(arg);
-    unpacked = unpacked xor registers.read(A); 
+    uint8_t unpacked = registers.unpack_binopt8(arg);
+    unpacked = unpacked xor registers.read_half(A); 
     registers.set_flag(z, unpacked == 0);
-    registers.write(A, unpacked);
+    registers.write_half(A, unpacked);
     return unpacked;
 }
 
+uint16_t Cpu::load_to_r16(RegisterOpt reg, uint16_t imm) {}
 
+uint16_t Cpu::load_to_mem(RegisterOpt reg, Register16 addr) {}
+
+uint16_t Cpu::load_to_a(Register16 addr) {}
+
+uint16_t Cpu::load_to_addr(uint16_t addr) {}
