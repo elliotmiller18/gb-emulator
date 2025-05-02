@@ -18,6 +18,11 @@ uint16_t Memory::read(BinOpt16 addr) {
     }
 }
 
+uint8_t Memory::read_byte(BinOpt16 addr) {
+    uint16_t address = registers.unpack_binopt16(addr);
+    return memory[address];
+}
+
 bool Memory::write(BinOpt16 addr, BinOpt16 val) {
     uint16_t unpacked_value = registers.unpack_binopt16(val);
     uint16_t unpacked_addr = registers.unpack_binopt16(addr);
