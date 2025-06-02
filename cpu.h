@@ -1,34 +1,36 @@
-#ifndef CPU_H
-#define CPU_H
-
 #include "rom.h"
 #include "register.h"
 #include "memory.h"
 #include <array>
 #include <variant>
 
-/// the value that programs expect the SP to be initialized to
-constexpr uint16_t STACK_STARTING_VALUE = 0xFFFE;
-/// the pointer to the top of VRAM
-constexpr uint16_t VRAM_TOP = 0x9FFF;
-
-class Cpu
-{
+class Cpu {
 private:
     Registers registers;
     Rom& rom;
-    Memory mem;
-    bool boot();
-    uint16_t excl_or(BinOpt8 arg);
-    uint16_t load_to_r16(RegisterOpt reg, uint16_t imm);
-    uint16_t load_to_mem(RegisterOpt reg, Register16 addr);
-    /// loads to a from the address in reg
-    uint16_t load_to_a(Register16 addr);
-    /// writes the stack pointer to the given address
-    uint16_t load_to_addr(uint16_t addr);
+    Memory memory;
 public:
-    Cpu(Rom& rom) : registers(Registers()), rom(rom), mem(registers) {}
-    ~Cpu() {}
-};
+    /// the value that programs expect the SP to be initialized to
+    static constexpr uint16_t STACK_STARTING_VALUE = 0xFFFE;
+    /// the pointer to the top of VRAM
+    static constexpr uint16_t VRAM_TOP = 0x9FFF;
 
-#endif
+    Cpu(Rom& rom);
+    ~Cpu();
+
+    enum LogicalOperation {
+        AND,
+        OR,
+        XOR,
+    };
+
+    // 8 bit arith operations
+    uint8_t add8(BinOpt8 arg, bool subtraction, bool carry = false);
+    uint8_t logicalOperation8(BinOpt8 arg, LogicalOperation op);
+    uint8_t step8(bool increment);
+    bool compare8(BinOpt8 arg);
+    // 16 bit arith operations
+    uint16_t add16(Register16 dest, Register16 operand);
+    uint16_t addSpSigned(int8_t operand);
+    uint16_t step16(Register16 dest, bool increment);
+};

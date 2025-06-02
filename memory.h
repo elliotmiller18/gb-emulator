@@ -5,6 +5,7 @@
 #include "register.h"
 
 constexpr int MEMORY_SIZE = 0xFFFF;
+constexpr bool BYTE_ADDRESSABLE = true;
 
 class Memory
 {
