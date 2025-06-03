@@ -49,8 +49,9 @@ public:
     ~Registers();
     uint16_t unpack_binopt(BinOpt val);
     uint8_t unpack_binopt8(BinOpt8 val);
-    uint8_t unpack_binopt16(BinOpt16 val);
-    void write(Register16 reg, BinOpt16 val);
+    uint16_t unpack_binopt16(BinOpt16 val);
+    /// @return the value written to reg
+    uint16_t write(Register16 reg, BinOpt16 val);
     void write_half(Register8 reg, BinOpt8 val);
     uint16_t read(Register16 reg);
     uint8_t read_half(Register8 reg);
