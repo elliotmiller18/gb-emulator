@@ -1,13 +1,9 @@
 #include "cpu.h"
 #include "rom.h"
 #include "register.h"
-#include <iostream>
 #include <stdexcept>
 
 constexpr int BIT_11_MASK = 0x0FFF;
-
-Cpu::Cpu(Rom& rom) : registers(Registers()), rom(rom), memory(registers) {}
-Cpu::~Cpu() {}
 
 uint8_t Cpu::add8(BinOpt8 arg, bool subtraction, bool carry) {
     uint8_t unpacked = registers.unpack_binopt8(arg);
@@ -31,7 +27,7 @@ uint8_t Cpu::add8(BinOpt8 arg, bool subtraction, bool carry) {
     return static_cast<uint8_t>(res);
 }
 
-uint8_t Cpu::logicalOperation8(BinOpt8 arg, LogicalOperation op) {
+uint8_t Cpu::logical_operation8(BinOpt8 arg, LogicalOperation op) {
     registers.set_flag(n, false);
     registers.set_flag(c, false);
     uint8_t unpacked = registers.unpack_binopt8(arg);
@@ -80,7 +76,7 @@ uint16_t Cpu::add16(Register16 dest, Register16 operand) {
     return static_cast<uint16_t>(res);
 }
 
-uint16_t Cpu::addSpSigned(int8_t operand){
+uint16_t Cpu::add_sp_signed(int8_t operand){
     registers.set_flag(n, 0);
     registers.set_flag(z, 0);
     
