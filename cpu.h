@@ -35,6 +35,8 @@ public:
     uint8_t load_to_mem8(BinOpt8 arg);
     // 16 bit transfer operations
     uint16_t load_to_reg16(Register16 dest, BinOpt16 arg);
+    // not implemented for now as the behavior is identical to add_sp_signed, the only difference is how the result is used
+    uint16_t ldhl_sp(int8_t operand);
 
     /// @brief pushes a value onto stack and decrements SP by 2
     /// @param arg register to be stored onto the stack
