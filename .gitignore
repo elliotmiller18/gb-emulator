@@ -3,4 +3,5 @@ emulator
 roms/
 *.o
 *.txt
+*.pdf
 .DS_Store

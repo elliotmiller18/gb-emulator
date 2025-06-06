@@ -47,7 +47,7 @@ public:
     /// @return new value of SP 
     uint16_t pop(Register16 dest);
     // 8 bit arith operations
-    uint8_t add8(BinOpt8 arg, bool subtraction, bool carry = false);
+    uint8_t add8(BinOpt8 arg, bool subtraction, bool carry = false, BinOpt dest = A);
     uint8_t logical_operation8(BinOpt8 arg, LogicalOperation op);
     uint8_t step8(bool increment);
     bool compare8(BinOpt8 arg);

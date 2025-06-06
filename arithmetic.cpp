@@ -5,23 +5,20 @@
 
 constexpr int BIT_11_MASK = 0x0FFF;
 
-uint8_t Cpu::add8(BinOpt8 arg, bool subtraction, bool carry) {
+bool get_bit(int target, int position) {
+    return target << position % 2 == 1;
+}
+
+uint8_t Cpu::add8(BinOpt8 arg, bool subtraction, bool carry, BinOpt dest) {
     uint8_t unpacked = registers.unpack_binopt8(arg);
-    uint8_t reg_a = registers.read_half(A);
-    uint8_t carry_val = registers.get_flag(c) && carry ? 1 : 0;
+    // only not reg a if we're using the flag setting behavior for another instruction like sp + signed_imm_8
+    uint8_t reg_a = static_cast<uint8_t>(registers.unpack_binopt(dest));
+    uint8_t carry_val = registers.get_flag(c);
+    
+    int res = subtraction ? res = reg_a - unpacked - carry_val : reg_a + unpacked + carry_val;
 
-    int res;
-    if(subtraction) {
-        res = reg_a - unpacked - carry_val;
-        registers.set_flag(c, reg_a < unpacked + carry_val);
-        registers.set_flag(h, (reg_a & 0xF) < (unpacked & 0xF) + carry_val);
-    } else {  
-        res = reg_a + unpacked + carry_val;  
-        registers.set_flag(c, res > 0xFF);
-        // do the lower 4 bits of both numbers add up to more than 0xF
-        registers.set_flag(h, (reg_a & 0xF) + (unpacked & 0xF) + carry_val > 0xF);
-    }
-
+    registers.set_flag(h, get_bit(res, 3));
+    registers.set_flag(c, get_bit(res, 7));
     registers.set_flag(n, subtraction);
     registers.set_flag(z, res == 0);
     return static_cast<uint8_t>(res);
@@ -82,9 +79,9 @@ uint16_t Cpu::add_sp_signed(int8_t operand){
     
     uint16_t unpacked = registers.read(SP);
     int res = unpacked + operand;
-    registers.set_flag(c, res > 0xFFFF);
-    //TODO: check this flag logic in discord, chatgpt doesn't like it but the reference manual seems to confirm it
-    registers.set_flag(h, (unpacked & BIT_11_MASK) + operand > BIT_11_MASK);
+    // set flags like an add8 with subtraction set as whether or not the operand is less than 0, carry=false, 
+    // and the optional dest arg as the SP (the function will cast away the upper byte)
+    add8(static_cast<uint8_t>(operand), operand < 0, false, SP);
     return res;
 }
 
