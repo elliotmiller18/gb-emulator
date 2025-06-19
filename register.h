@@ -31,7 +31,6 @@ enum Flag {
     h,
     c,
 };
-
 /// A variant between Register16 and Register8.
 using RegisterOpt = std::variant<Register16, Register8>;
 /// Any 16 bit argument, typically used for addressing.

@@ -1,5 +1,4 @@
 #include "cpu.h"
-#include "rom.h"
 #include "register.h"
 #include <stdexcept>
 
@@ -88,3 +87,26 @@ uint16_t Cpu::add_sp_signed(int8_t operand){
 uint16_t Cpu::step16(Register16 dest, bool increment) {
     return registers.read(dest) + (increment ? 1 : -1);
 }
+
+bool Cpu::complement_carry_flag() {
+    registers.set_flag(n, 0);
+    registers.set_flag(h, 0);
+    registers.set_flag(c, !registers.get_flag(c));
+    return registers.get_flag(c);
+}
+
+bool Cpu::set_carry_flag() {
+    registers.set_flag(n, 0);
+    registers.set_flag(h, 0);
+    registers.set_flag(c, 1);
+    return registers.get_flag(c);
+}
+
+uint8_t Cpu::complement_accumulator() {
+    uint8_t flipped = ~registers.read_half(A);
+    registers.set_flag(n, 1);
+    registers.set_flag(h, 1);
+    registers.write_half(A, flipped);
+    return flipped;
+}
+

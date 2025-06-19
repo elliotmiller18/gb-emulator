@@ -14,6 +14,7 @@ uint16_t Cpu::load_to_reg16(Register16 dest, BinOpt16 arg) {
     return registers.read(dest);
 }
 
+//TODO: fix push and pop
 uint16_t Cpu::push(Register16 arg){
     uint16_t sp_value = registers.read(SP) - 2;
     memory.write_word(sp_value, arg);

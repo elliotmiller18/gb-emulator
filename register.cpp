@@ -111,7 +111,7 @@ void Registers::set_flag(Flag flag, bool value) {
             break;
         default:
             throw std::invalid_argument("Invalid flag"); 
-    } 
+    }
     registers[AF] = (registers[AF] & ~(bit << shift)) | (bit << shift);
 }
 
