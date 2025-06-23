@@ -1,6 +1,4 @@
-#ifndef REGISTER_H
-#define REGISTER_H
-
+#pragma once
 #include <variant>
 #include <array>
 
@@ -43,7 +41,9 @@ using BinOpt = std::variant<BinOpt16, BinOpt8>;
 class Registers {
 private:
     std::array<uint16_t, NUM_REGISTERS> registers;
+    bool IME = false;
 public:
+
     Registers();
     ~Registers();
     uint16_t unpack_binopt(BinOpt val);
@@ -58,6 +58,6 @@ public:
     Register16 half_reg_to_reg(Register8 reg);
     void set_flag(Flag flag, bool value);
     bool get_flag(Flag flag);
+    void enable_interrupts() {IME = true;}
+    void disable_interrupts() {IME = false;}
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef CPU_H
-#define CPU_H
+#pragma int
 
 #include "rom.h"
 #include "register.h"
@@ -58,14 +57,12 @@ public:
     bool complement_carry_flag();
     bool set_carry_flag();
     uint8_t complement_accumulator();
-    //TODO: implement (have fun lol, not in gbctr only in gbpdf)
     uint8_t decimal_adjust_acc();
     // ---- TODO: left unimplemented for now because they're so simple ---
     uint16_t jump(uint16_t addr);
     uint16_t jump_cc(uint16_t addr);
-    // ---- implement
+    // ---- unimplemented
     
-    uint16_t call();
+    void call(uint16_t faddr, bool condition = false);
+    void ret(bool condition = false, bool interrupt = false);
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef ROM_H
-#define ROM_H
+#pragma once
 
 #include <vector>
 
@@ -9,6 +8,4 @@ public:
     Rom(const char* filename);
     ~Rom();    
 };
-
-#endif
 

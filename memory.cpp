@@ -1,5 +1,6 @@
 #include "memory.h"
 #include "register.h"
+#include "utils.h"
 #include <iostream>
 #include <variant>
 
@@ -15,6 +16,7 @@ uint16_t Memory::unpack_addr(BinOpt addr) {
     }
 }
 
+/** reads from addr and addr + 1 constructing based on whether or not GB_CPU_BIG_ENDIAN is true or false */
 uint16_t Memory::read_word(BinOpt addr) {
     // TODO: validate implementation
     uint16_t unpacked_addr = unpack_addr(addr);
@@ -35,14 +37,14 @@ uint8_t Memory::read_byte(BinOpt addr) {
     uint16_t address = unpack_addr(addr);
     return memory[address];
 }
-
+/** writes lsb to addr + 1 and msb to addr if GB_CPU_BIG_ENDIAN is true, otherwise writes the other way */
 bool Memory::write_word(BinOpt addr, BinOpt16 val) {
     // TODO: validate implementation
     uint16_t unpacked_value = registers.unpack_binopt16(val);
     uint16_t unpacked_addr = unpack_addr(addr);
 
-    uint8_t upper_bits = static_cast<uint8_t>(unpacked_value >> 8);
-    uint8_t lower_bits = static_cast<uint8_t>(unpacked_value);
+    uint8_t upper_bits = msb(unpacked_value);
+    uint8_t lower_bits = lsb(unpacked_value);
 
     if(GB_CPU_BIG_ENDIAN) {
         uint8_t temp = upper_bits;

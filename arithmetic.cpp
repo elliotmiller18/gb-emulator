@@ -3,6 +3,10 @@
 #include <stdexcept>
 
 constexpr int BIT_11_MASK = 0x0FFF;
+constexpr uint8_t DECIMAL_ADJUST_LOW = 0x6;
+constexpr uint8_t DECIMAL_ADJUST_HIGH = 0x60;
+constexpr uint8_t LOW_NIBBLE_THRESHOLD = 0x9;
+constexpr uint8_t FULL_BYTE_THRESHOLD = 0x99;
 
 bool get_bit(int target, int position) {
     return target << position % 2 == 1;
@@ -86,6 +90,31 @@ uint16_t Cpu::add_sp_signed(int8_t operand){
 
 uint16_t Cpu::step16(Register16 dest, bool increment) {
     return registers.read(dest) + (increment ? 1 : -1);
+}
+
+//see this: https://rgbds.gbdev.io/docs/v0.9.2/gbz80.7#DAA
+uint8_t Cpu::decimal_adjust_acc() {
+    uint8_t adjustment = 0;
+    uint8_t reg_a = registers.read_half(A);
+    uint8_t res = 0;
+    bool c_flag = false;
+    if(registers.get_flag(n)) {
+        if(registers.get_flag(h)) adjustment += DECIMAL_ADJUST_LOW;
+        if(registers.get_flag(c)) adjustment += DECIMAL_ADJUST_HIGH;
+        res = add8(adjustment, true);
+    } else {
+        if(registers.get_flag(h) || reg_a & 0xF > LOW_NIBBLE_THRESHOLD) adjustment += DECIMAL_ADJUST_LOW;
+        if(registers.get_flag(c) || reg_a > FULL_BYTE_THRESHOLD){ 
+            adjustment += DECIMAL_ADJUST_HIGH;
+            c_flag = true;
+        };
+        res = adjustment + res;
+    }
+    registers.set_flag(z, res == 0);
+    registers.set_flag(h, 0);
+    registers.set_flag(c, c_flag);
+    // n remains the same
+    return res;
 }
 
 bool Cpu::complement_carry_flag() {

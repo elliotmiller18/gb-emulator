@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "memory.h"
 #include "register.h"
+#include "utils.h"
 #include <stdexcept>
 
 uint16_t Cpu::load_to_reg16(Register16 dest, BinOpt16 arg) {
@@ -14,11 +15,11 @@ uint16_t Cpu::load_to_reg16(Register16 dest, BinOpt16 arg) {
     return registers.read(dest);
 }
 
-//TODO: fix push and pop
 uint16_t Cpu::push(Register16 arg){
-    uint16_t sp_value = registers.read(SP) - 2;
-    memory.write_word(sp_value, arg);
-    return registers.write(SP, sp_value);
+    uint16_t addr = registers.read(SP) - 2;
+    uint16_t val = registers.read(arg);
+    memory.write_word(addr, val);
+    return registers.write(SP, addr);
 }
 
 uint16_t Cpu::pop(Register16 dest){

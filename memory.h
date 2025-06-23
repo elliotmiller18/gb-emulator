@@ -1,5 +1,4 @@
-#ifndef MEMORY_H
-#define MEMORY_H
+#pragma once
 
 #include <array>
 #include "register.h"
@@ -24,6 +23,3 @@ public:
     bool write_word(BinOpt addr, BinOpt16 val);
     bool write_byte(BinOpt addr, BinOpt8 byte);
 };
-
-#endif
-
