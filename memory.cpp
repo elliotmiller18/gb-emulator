@@ -2,9 +2,15 @@
 #include "register.h"
 #include "utils.h"
 #include <iostream>
+#include <fstream>
 #include <variant>
 
-Memory::Memory(Registers& registers) : registers(registers) {}
+Memory::Memory(Registers& registers, const char* filename) : registers(registers) {
+    // read rom into memory
+    std::ifstream(filename, std::ios::binary).read(reinterpret_cast<char*>(memory.data()), memory.size());
+}
+
+
 
 Memory::~Memory() {}
 

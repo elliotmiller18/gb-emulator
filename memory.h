@@ -15,7 +15,7 @@ private:
     std::array<uint8_t, MEMORY_SIZE> memory;
     Registers& registers;
 public:
-    Memory(Registers& registers);
+    Memory(Registers& registers, const char* filename);
     ~Memory();
     uint16_t unpack_addr(BinOpt addr);
     uint16_t read_word(BinOpt addr);

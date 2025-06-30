@@ -1,24 +1,26 @@
-#pragma int
+#pragma once
 
-#include "rom.h"
 #include "register.h"
 #include "memory.h"
 #include <array>
 #include <variant>
 
 class Cpu {
-private:
     Registers registers;
-    Rom& rom;
     Memory memory;
-public:
     /// the value that programs expect the SP to be initialized to
     static constexpr uint16_t STACK_STARTING_VALUE = 0xFFFE;
     /// the pointer to the top of VRAM
     static constexpr uint16_t VRAM_TOP = 0x9FFF;
+    // normal 2 bytes ones and CB prefixed instructions
+    static constexpr int NUM_OPCODES = 0xFF * 2;
+    using opcode_handler = void (Cpu::*)();
+    static constexpr opcode_handler opcode_table[NUM_OPCODES] = {
+        //0x00 &
+    };
 
-    Cpu::Cpu(Rom& rom) : registers(Registers()), rom(rom), memory(registers) {}
-    Cpu::~Cpu() {}
+    Cpu(const char* filename) : registers(Registers()), memory(registers, filename) {}
+    ~Cpu() {}
 
     enum LogicalOperation {
         AND,
@@ -26,7 +28,11 @@ public:
         XOR,
     };
     
-    //NOTE: These function definitions generally follow the pattern of the reference guide
+// NON-INSTRUCTIONS
+    int fetch_and_inc();
+    int execute();
+    // not implemented yet, simulate one cpu cycle
+    void cycle(int cycles = 1);
 
 // 8 bit transfer operations
     //NOTE: unimplemented for now, left here in case we want to use it for better hardware emulation

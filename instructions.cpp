@@ -1,12 +1,16 @@
 #include "cpu.h"
 #include "register.h"
+#include "memory.h"
+#include "utils.h"
 #include <stdexcept>
+
 
 constexpr int BIT_11_MASK = 0x0FFF;
 constexpr uint8_t DECIMAL_ADJUST_LOW = 0x6;
 constexpr uint8_t DECIMAL_ADJUST_HIGH = 0x60;
 constexpr uint8_t LOW_NIBBLE_THRESHOLD = 0x9;
 constexpr uint8_t FULL_BYTE_THRESHOLD = 0x99;
+constexpr char* INVALID_ARG_MSG = "Unfortunately, there is no native 3 bit type in C++. Argument must be less than 0b111";
 
 bool get_bit(int target, int position) {
     return target << position % 2 == 1;
@@ -16,7 +20,7 @@ uint8_t Cpu::add8(BinOpt8 arg, bool subtraction, bool carry, BinOpt dest) {
     uint8_t unpacked = registers.unpack_binopt8(arg);
     // only not reg a if we're using the flag setting behavior for another instruction like sp + signed_imm_8
     uint8_t reg_a = static_cast<uint8_t>(registers.unpack_binopt(dest));
-    uint8_t carry_val = registers.get_flag(c);
+    uint8_t carry_val = carry ? registers.get_flag(c) : 0;
     
     int res = subtraction ? res = reg_a - unpacked - carry_val : reg_a + unpacked + carry_val;
 
@@ -103,7 +107,7 @@ uint8_t Cpu::decimal_adjust_acc() {
         if(registers.get_flag(c)) adjustment += DECIMAL_ADJUST_HIGH;
         res = add8(adjustment, true);
     } else {
-        if(registers.get_flag(h) || reg_a & 0xF > LOW_NIBBLE_THRESHOLD) adjustment += DECIMAL_ADJUST_LOW;
+        if(registers.get_flag(h) || (reg_a & 0xF) > LOW_NIBBLE_THRESHOLD) adjustment += DECIMAL_ADJUST_LOW;
         if(registers.get_flag(c) || reg_a > FULL_BYTE_THRESHOLD){ 
             adjustment += DECIMAL_ADJUST_HIGH;
             c_flag = true;
@@ -137,5 +141,129 @@ uint8_t Cpu::complement_accumulator() {
     registers.set_flag(h, 1);
     registers.write_half(A, flipped);
     return flipped;
+}
+
+bool Cpu::bit(int bit, BinOpt8 arg) {
+    if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG);
+    registers.set_flag(n, 0);
+    // for some reason ..?
+    registers.set_flag(h, 1);
+    uint8_t unpacked = registers.unpack_binopt8(arg);
+    bool test = (unpacked & (1 << bit)) == 0;
+    registers.set_flag(z, test);
+    return test;
+}
+
+uint8_t Cpu::res(int bit, BinOpt8 arg) {
+    if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG);
+    uint8_t unpacked = registers.unpack_binopt8(arg);
+    return (unpacked & ~(1 << bit));
+}
+
+uint8_t Cpu::set(int bit, BinOpt8 arg) {
+    if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG);
+    uint8_t unpacked = registers.unpack_binopt8(arg);
+    return (unpacked & (1 << bit));
+}
+
+uint8_t Cpu::shift_left(BinOpt8 operand) {
+    uint8_t unpacked = registers.unpack_binopt8(operand);
+    uint8_t res = unpacked << 1;
+    registers.set_flag(z, res == 0);
+    registers.set_flag(h, 0);
+    registers.set_flag(n, 0);
+    // contents of original bit 7
+    registers.set_flag(c, (unpacked & (1 << 7)));
+    return res;
+}
+
+uint8_t Cpu::shift_right(BinOpt8 operand, bool preserveBit7) {
+    uint8_t unpacked = registers.unpack_binopt8(operand);
+    uint8_t res = unpacked >> 1;
+
+    if(preserveBit7) res |= unpacked & 0x80;
+
+    registers.set_flag(z, res == 0);
+    registers.set_flag(h, 0);
+    registers.set_flag(n, 0);
+    // contents of original bit 0
+    registers.set_flag(c, unpacked & 1);
+    return res;
+}
+
+uint8_t Cpu::rotate_left(BinOpt8 operand, bool carry) {
+    uint8_t unpacked = registers.unpack_binopt8(operand);
+    uint8_t res = unpacked << 1;
+    if(carry) res |= unpacked >> 7;
+    else res |= static_cast<int>(carry);
+
+    registers.set_flag(z, res == 0);
+    registers.set_flag(h, 0);
+    registers.set_flag(n, 0);
+    // contents of original bit 0
+    registers.set_flag(c, unpacked & 7);
+    return res;
+}
+
+uint8_t Cpu::rotate_right(BinOpt8 operand, bool carry) {
+    uint8_t unpacked = registers.unpack_binopt8(operand);
+    uint8_t res = unpacked >> 1;
+    if(carry) res |= (unpacked & 1) << 7 ;
+    else res |= static_cast<int>(carry) << 7;
+
+    registers.set_flag(z, res == 0);
+    registers.set_flag(h, 0);
+    registers.set_flag(n, 0);
+    // contents of original bit 0
+    registers.set_flag(c, unpacked & 1);
+    return res;
+}
+/// swaps msb and lsb
+uint8_t Cpu::swap(BinOpt8 operand) {
+    uint8_t unpacked = registers.unpack_binopt8(operand);
+    registers.set_flag(z, unpacked == 0);
+    registers.set_flag(h, 0);
+    registers.set_flag(n, 0);
+    registers.set_flag(c, 0);
+    // contents of original bit 0
+    return (lsb(unpacked) << 4) | msb(unpacked);
+}
+
+uint16_t Cpu::load_to_reg16(Register16 dest, BinOpt16 arg) {
+    if(std::holds_alternative<uint16_t>(arg)) {
+        if(dest == AF || dest == PC) throw std::logic_error("Cannot load to PC or AF using this instruction");
+    } else {
+        if(dest != SP) throw std::logic_error("Must load to SP using this instruction");
+    }
+
+    registers.write(dest, registers.unpack_binopt16(arg));
+    return registers.read(dest);
+}
+
+uint16_t Cpu::push(Register16 arg){
+    uint16_t addr = registers.read(SP) - 2;
+    uint16_t val = registers.read(arg);
+    memory.write_word(addr, val);
+    return registers.write(SP, addr);
+}
+
+uint16_t Cpu::pop(Register16 dest){
+    uint16_t sp_value = registers.read(SP);
+    uint16_t word = memory.read_word(sp_value);
+    registers.write(dest, word);
+    return registers.write(SP, static_cast<uint16_t>(sp_value + 2));
+}
+
+void Cpu::call(uint16_t faddr, bool condition) {
+    if(!condition || registers.get_flag(z)) {
+        push(PC);
+        registers.write(PC, faddr);
+    }
+}
+void Cpu::ret(bool condition, bool interrupt) {
+    if(!condition || registers.get_flag(z)) {
+        pop(PC);
+    }
+    if(interrupt) registers.enable_interrupts();
 }
 
