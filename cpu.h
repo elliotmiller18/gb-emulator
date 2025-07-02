@@ -4,8 +4,10 @@
 #include "memory.h"
 #include <array>
 #include <variant>
+#include <stdexcept>
 
 class Cpu {
+public:
     Registers registers;
     Memory memory;
     /// the value that programs expect the SP to be initialized to
@@ -13,11 +15,9 @@ class Cpu {
     /// the pointer to the top of VRAM
     static constexpr uint16_t VRAM_TOP = 0x9FFF;
     // normal 2 bytes ones and CB prefixed instructions
-    static constexpr int NUM_OPCODES = 0xFF * 2;
+    static constexpr int NUM_OPCODES = 512;
     using opcode_handler = void (Cpu::*)();
-    static constexpr opcode_handler opcode_table[NUM_OPCODES] = {
-        //0x00 &
-    };
+    // opcode table at the bottom of the file
 
     Cpu(const char* filename) : registers(Registers()), memory(registers, filename) {}
     ~Cpu() {}
@@ -33,6 +33,12 @@ class Cpu {
     int execute();
     // not implemented yet, simulate one cpu cycle
     void cycle(int cycles = 1);
+    uint8_t get_current_opcode();
+
+// INSTRUCTION HANDLERS AND SIMPLE INSTRUCTIONS, SORTED BY OPCODE
+
+    void noop();
+    void ld_imm16_to_reg16();
 
 // 8 bit transfer operations
     //NOTE: unimplemented for now, left here in case we want to use it for better hardware emulation
@@ -85,4 +91,10 @@ class Cpu {
     uint8_t rotate_right(BinOpt8 operand, bool carry);
     /// swaps msb and lsb
     uint8_t swap(BinOpt8 operand);
+
+    static constexpr opcode_handler opcode_table[NUM_OPCODES] = {
+        /*0x00, NOP*/ &Cpu::noop,
+        /*0x01, LD BC, d16*/ &Cpu::ld_imm16_to_reg16,
+        /*0x02, LD (BC) A*/
+    };
 };

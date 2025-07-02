@@ -4,7 +4,6 @@
 #include "utils.h"
 #include <stdexcept>
 
-
 constexpr int BIT_11_MASK = 0x0FFF;
 constexpr uint8_t DECIMAL_ADJUST_LOW = 0x6;
 constexpr uint8_t DECIMAL_ADJUST_HIGH = 0x60;
@@ -12,9 +11,54 @@ constexpr uint8_t LOW_NIBBLE_THRESHOLD = 0x9;
 constexpr uint8_t FULL_BYTE_THRESHOLD = 0x99;
 constexpr char* INVALID_ARG_MSG = "Unfortunately, there is no native 3 bit type in C++. Argument must be less than 0b111";
 
-bool get_bit(int target, int position) {
+//UTILITIES
+
+inline bool get_bit(int target, int position) {
     return target << position % 2 == 1;
 }
+
+/// start and end are inclusive
+int get_bits_from_range(int target, int start, int end) {
+    target >>= start;
+    // all 1s 
+    return target & ~( (~0x0) << end );
+}
+
+inline bool combine_bytes(uint8_t msb, uint8_t lsb) {
+    return (msb << 8) | lsb;
+}
+
+inline Register16 get_register16_from_opcode_bits(int bits) {
+    // 00 should be BC, as AF is never referenced directly as we don't want to set the flag bits
+    Register16 dest = static_cast<Register16>(bits + 1);
+    if(dest == AF || dest == PC) throw std::invalid_argument("Must be within the range 0b00 (BC) - 0b11 (SP)");
+}
+
+inline uint8_t Cpu::get_current_opcode() {
+    // this is the instruction we're currently executing so a jump doesn't cause issues
+    // as if we're about to jump we've already incremented PC by 1 but haven't actually
+    // executed the jump instruction yet
+    return memory.read_byte(static_cast<uint16_t>(registers.read(PC) - 1));
+}
+
+//INSTRUCTION HANDLERS
+
+//TODO: double check if we can batch cycle like we do in ld_reg_16 or we need to cycle after each operation
+
+void Cpu::noop() {
+    cycle(4);
+}
+
+void Cpu::ld_imm16_to_reg16() {
+    uint8_t opcode = get_current_opcode();
+    Register16 dest = get_register16_from_opcode_bits(get_bits_from_range(opcode, 4, 5));
+    uint8_t lsb = fetch_and_inc();
+    uint8_t msb = fetch_and_inc();
+    registers.write(dest, combine_bytes(msb, lsb));
+    cycle(3);
+}
+
+//IMPLEMENTATIONS
 
 uint8_t Cpu::add8(BinOpt8 arg, bool subtraction, bool carry, BinOpt dest) {
     uint8_t unpacked = registers.unpack_binopt8(arg);

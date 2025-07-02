@@ -3,6 +3,7 @@
 #include <array>
 
 constexpr int NUM_REGISTERS = 6;
+constexpr int NUM_HALF_REGISTERS = 7;
 
 enum Register16 {
     AF,

@@ -30,6 +30,7 @@ uint8_t Registers::unpack_binopt8(BinOpt8 val) {
 }
 
 uint16_t Registers::write(Register16 reg, BinOpt16 val) {
+    if(static_cast<int>(reg) > NUM_REGISTERS) throw std::invalid_argument("Invalid register16");
     uint16_t unpacked_value = unpack_binopt16(val);
     registers[reg] = unpacked_value;
     return unpacked_value;
@@ -54,6 +55,7 @@ void Registers::write_half(Register8 reg, BinOpt8 val) {
 }
 
 uint16_t Registers::read(Register16 reg) {
+    if(static_cast<int>(reg) > NUM_REGISTERS) throw std::invalid_argument("Invalid register16");
     return registers[reg];
 }
 

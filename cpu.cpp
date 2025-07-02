@@ -1,28 +1,9 @@
 #include "cpu.h"
 #include "register.h"
+// #include <iostream>
 
-int Cpu::execute() {
-    int instruction = 0;
-    while(true) {
-        bool continue_decode = false;
-        instruction |= fetch_and_inc();
-        // see https://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
-        switch(instruction) {
-        // 0 prefix
-            //NOP
-            case 0x00:
-                cycle(4);
-                break;
-            case 0x01:
-                //implementation
-            default:
-            // misc incomplete instruction
-                instruction <<= 8;
-                continue_decode = true;
-                break;
-        }
-        if(!continue_decode) instruction = 0;
-    }
+void Cpu::cycle(int cycles) {
+    // std::cout << 'waiting\n';
 }
 
 int Cpu::fetch_and_inc() {
