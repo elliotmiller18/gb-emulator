@@ -3,6 +3,7 @@
 #include "memory.h"
 #include "utils.h"
 #include <stdexcept>
+#include <iostream>
 
 constexpr int BIT_11_MASK = 0x0FFF;
 constexpr uint8_t DECIMAL_ADJUST_LOW = 0x6;
@@ -14,7 +15,7 @@ constexpr char* INVALID_ARG_MSG = "Unfortunately, there is no native 3 bit type 
 //UTILITIES
 
 inline bool get_bit(int target, int position) {
-    return target << position % 2 == 1;
+    return (target >> position) % 2 == 1;
 }
 
 /// start and end are inclusive
@@ -45,9 +46,7 @@ inline uint8_t Cpu::get_current_opcode() {
 
 //TODO: double check if we can batch cycle like we do in ld_reg_16 or we need to cycle after each operation
 
-void Cpu::noop() {
-    cycle(4);
-}
+void Cpu::noop() {cycle();}
 
 void Cpu::ld_imm16_to_reg16() {
     uint8_t opcode = get_current_opcode();
@@ -56,6 +55,28 @@ void Cpu::ld_imm16_to_reg16() {
     uint8_t msb = fetch_and_inc();
     registers.write(dest, combine_bytes(msb, lsb));
     cycle(3);
+}
+
+void Cpu::ld_acc_to_memory(){
+    // we'll only be here with opcode 00xx0010
+    uint8_t opcode = get_current_opcode();
+    switch(opcode >> 4) {
+        case 0b00:
+            memory.write_byte(BC, A);
+            break;
+        case 0b01:
+            memory.write_byte(DE, A);
+            break;
+        case 0b10:
+            memory.write_byte(HL, A);
+            registers.write(HL, static_cast<uint16_t>(registers.read(HL) + 1));
+            break;
+        case 0b11:
+            memory.write_byte(HL, A);
+            registers.write(HL, static_cast<uint16_t>(registers.read(HL) - 1));
+            break;
+    }
+    cycle(2);
 }
 
 //IMPLEMENTATIONS

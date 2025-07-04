@@ -16,6 +16,7 @@ private:
     Registers& registers;
 public:
     Memory(Registers& registers, const char* filename);
+    Memory(Registers& registers) : registers(registers) {}
     ~Memory();
     uint16_t unpack_addr(BinOpt addr);
     uint16_t read_word(BinOpt addr);

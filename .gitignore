@@ -2,6 +2,7 @@ emulator
 .vscode/
 roms/
 *.o
+*.out
 *.txt
 *.pdf
 .DS_Store

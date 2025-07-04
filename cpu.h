@@ -20,6 +20,7 @@ public:
     // opcode table at the bottom of the file
 
     Cpu(const char* filename) : registers(Registers()), memory(registers, filename) {}
+    Cpu() : registers(Registers()), memory(registers) {}
     ~Cpu() {}
 
     enum LogicalOperation {
@@ -31,7 +32,7 @@ public:
 // NON-INSTRUCTIONS
     int fetch_and_inc();
     int execute();
-    // not implemented yet, simulate one cpu cycle
+    //TODO: implement (simulates one CPU cycle)
     void cycle(int cycles = 1);
     uint8_t get_current_opcode();
 
@@ -39,6 +40,7 @@ public:
 
     void noop();
     void ld_imm16_to_reg16();
+    void ld_acc_to_memory();
 
 // 8 bit transfer operations
     //NOTE: unimplemented for now, left here in case we want to use it for better hardware emulation
@@ -95,6 +97,10 @@ public:
     static constexpr opcode_handler opcode_table[NUM_OPCODES] = {
         /*0x00, NOP*/ &Cpu::noop,
         /*0x01, LD BC, d16*/ &Cpu::ld_imm16_to_reg16,
-        /*0x02, LD (BC) A*/
+        /*0x02, LD [BC] A*/  &Cpu::ld_acc_to_memory,
+        /*0x12, LD [DE] A*/  &Cpu::ld_acc_to_memory,
+        /*0x12, LD [DE] A*/  &Cpu::ld_acc_to_memory,
+        /*0x22, LD [HL+] A*/ &Cpu::ld_acc_to_memory,
+        /*0x32, LD [HL-] A*/ &Cpu::ld_acc_to_memory,
     };
 };

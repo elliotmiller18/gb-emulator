@@ -44,7 +44,6 @@ private:
     std::array<uint16_t, NUM_REGISTERS> registers;
     bool IME = false;
 public:
-
     Registers();
     ~Registers();
     uint16_t unpack_binopt(BinOpt val);

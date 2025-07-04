@@ -1,9 +1,9 @@
 #include "cpu.h"
 #include "register.h"
-// #include <iostream>
+#include <iostream>
 
 void Cpu::cycle(int cycles) {
-    // std::cout << 'waiting\n';
+    std::cout << "cycling\n";    
 }
 
 int Cpu::fetch_and_inc() {
