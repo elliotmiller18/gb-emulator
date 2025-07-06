@@ -4,43 +4,14 @@
 #include "utils.h"
 #include <stdexcept>
 #include <iostream>
+#include <string_view>
 
 constexpr int BIT_11_MASK = 0x0FFF;
 constexpr uint8_t DECIMAL_ADJUST_LOW = 0x6;
 constexpr uint8_t DECIMAL_ADJUST_HIGH = 0x60;
 constexpr uint8_t LOW_NIBBLE_THRESHOLD = 0x9;
 constexpr uint8_t FULL_BYTE_THRESHOLD = 0x99;
-constexpr char* INVALID_ARG_MSG = "Unfortunately, there is no native 3 bit type in C++. Argument must be less than 0b111";
-
-//UTILITIES
-
-inline bool get_bit(int target, int position) {
-    return (target >> position) % 2 == 1;
-}
-
-/// start and end are inclusive
-int get_bits_from_range(int target, int start, int end) {
-    target >>= start;
-    // all 1s 
-    return target & ~( (~0x0) << end );
-}
-
-inline bool combine_bytes(uint8_t msb, uint8_t lsb) {
-    return (msb << 8) | lsb;
-}
-
-inline Register16 get_register16_from_opcode_bits(int bits) {
-    // 00 should be BC, as AF is never referenced directly as we don't want to set the flag bits
-    Register16 dest = static_cast<Register16>(bits + 1);
-    if(dest == AF || dest == PC) throw std::invalid_argument("Must be within the range 0b00 (BC) - 0b11 (SP)");
-}
-
-inline uint8_t Cpu::get_current_opcode() {
-    // this is the instruction we're currently executing so a jump doesn't cause issues
-    // as if we're about to jump we've already incremented PC by 1 but haven't actually
-    // executed the jump instruction yet
-    return memory.read_byte(static_cast<uint16_t>(registers.read(PC) - 1));
-}
+constexpr std::string_view INVALID_ARG_MSG = "Unfortunately, there is no native 3 bit type in C++. Argument must be less than 0b111";
 
 //INSTRUCTION HANDLERS
 
@@ -79,15 +50,38 @@ void Cpu::ld_acc_to_memory(){
     cycle(2);
 }
 
+void Cpu::inc16_handler(){
+    Register16 target = get_register16_from_opcode_bits(get_bits_from_range(get_current_opcode(), 4, 5));
+    registers.write(target, static_cast<uint16_t>(registers.read(target) + 1));
+    cycle(2);
+}
+
+void Cpu::step8_handler() {
+    int opcode = get_current_opcode();
+    int reg_bits = get_bits_from_range(opcode, 3, 5);
+    // the last nibble of inc8 is 0b100, dec8 is 0b101
+    bool increment = get_bit(opcode, 0) == 0;
+    if(reg_bits < 0b110) step8(static_cast<Register8>(reg_bits+1), increment);
+    else if(reg_bits == 0b110) step8(A, increment);
+    //inc/dec [HL]
+    else {
+        uint8_t byte = memory.read_byte(registers.read(HL));
+        memory.write_byte(registers.read(HL), step8(byte, increment));
+        cycle(2);
+    }
+    cycle(1);
+}
+
+
 //IMPLEMENTATIONS
 
-uint8_t Cpu::add8(BinOpt8 arg, bool subtraction, bool carry, BinOpt dest) {
-    uint8_t unpacked = registers.unpack_binopt8(arg);
-    // only not reg a if we're using the flag setting behavior for another instruction like sp + signed_imm_8
-    uint8_t reg_a = static_cast<uint8_t>(registers.unpack_binopt(dest));
+uint8_t Cpu::add8(BinOpt8 arg1, BinOpt8 arg2, bool subtraction, bool carry) {
+    uint8_t unpacked1 = registers.unpack_binopt8(arg1);
+    uint8_t unpacked2 = registers.unpack_binopt8(arg2);
+
     uint8_t carry_val = carry ? registers.get_flag(c) : 0;
     
-    int res = subtraction ? res = reg_a - unpacked - carry_val : reg_a + unpacked + carry_val;
+    int res = subtraction ? unpacked1 - unpacked2 - carry_val : unpacked1 + unpacked2 + carry_val;
 
     registers.set_flag(h, get_bit(res, 3));
     registers.set_flag(c, get_bit(res, 7));
@@ -121,13 +115,13 @@ uint8_t Cpu::logical_operation8(BinOpt8 arg, LogicalOperation op) {
 
 bool Cpu::compare8(BinOpt8 arg) {
     // compares are just a subtraction
-    add8(arg, true);
+    add8(A, arg, true);
     return registers.get_flag(z) == 0;
 }
 
-uint8_t Cpu::step8(bool increment) {
+uint8_t Cpu::step8(BinOpt8 arg, bool increment) {
     bool old_flag = registers.get_flag(c);
-    uint8_t res = add8(static_cast<uint8_t>(1), increment);
+    uint8_t res = add8(arg, static_cast<uint8_t>(1), increment);
     registers.set_flag(c, old_flag);
     return res;
 }
@@ -145,6 +139,7 @@ uint16_t Cpu::add16(Register16 dest, Register16 operand) {
     return static_cast<uint16_t>(res);
 }
 
+//TODO: refactor this
 uint16_t Cpu::add_sp_signed(int8_t operand){
     registers.set_flag(n, 0);
     registers.set_flag(z, 0);
@@ -153,13 +148,13 @@ uint16_t Cpu::add_sp_signed(int8_t operand){
     int res = unpacked + operand;
     // set flags like an add8 with subtraction set as whether or not the operand is less than 0, carry=false, 
     // and the optional dest arg as the SP (the function will cast away the upper byte)
-    add8(static_cast<uint8_t>(operand), operand < 0, false, SP);
+    // add8(static_cast<uint8_t>(operand), operand < 0, false, SP);
     return res;
 }
 
-uint16_t Cpu::step16(Register16 dest, bool increment) {
-    return registers.read(dest) + (increment ? 1 : -1);
-}
+// uint16_t Cpu::step16(Register16 dest, bool increment) {
+//     return registers.read(dest) + (increment ? 1 : -1);
+// }
 
 //see this: https://rgbds.gbdev.io/docs/v0.9.2/gbz80.7#DAA
 uint8_t Cpu::decimal_adjust_acc() {
@@ -170,7 +165,7 @@ uint8_t Cpu::decimal_adjust_acc() {
     if(registers.get_flag(n)) {
         if(registers.get_flag(h)) adjustment += DECIMAL_ADJUST_LOW;
         if(registers.get_flag(c)) adjustment += DECIMAL_ADJUST_HIGH;
-        res = add8(adjustment, true);
+        res = add8(A, adjustment, true);
     } else {
         if(registers.get_flag(h) || (reg_a & 0xF) > LOW_NIBBLE_THRESHOLD) adjustment += DECIMAL_ADJUST_LOW;
         if(registers.get_flag(c) || reg_a > FULL_BYTE_THRESHOLD){ 
@@ -209,7 +204,7 @@ uint8_t Cpu::complement_accumulator() {
 }
 
 bool Cpu::bit(int bit, BinOpt8 arg) {
-    if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG);
+    if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG.data());
     registers.set_flag(n, 0);
     // for some reason ..?
     registers.set_flag(h, 1);
@@ -220,13 +215,13 @@ bool Cpu::bit(int bit, BinOpt8 arg) {
 }
 
 uint8_t Cpu::res(int bit, BinOpt8 arg) {
-    if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG);
+    if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG.data());
     uint8_t unpacked = registers.unpack_binopt8(arg);
     return (unpacked & ~(1 << bit));
 }
 
 uint8_t Cpu::set(int bit, BinOpt8 arg) {
-    if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG);
+    if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG.data());
     uint8_t unpacked = registers.unpack_binopt8(arg);
     return (unpacked & (1 << bit));
 }
@@ -319,14 +314,14 @@ uint16_t Cpu::pop(Register16 dest){
     return registers.write(SP, static_cast<uint16_t>(sp_value + 2));
 }
 
-void Cpu::call(uint16_t faddr, bool condition) {
-    if(!condition || registers.get_flag(z)) {
+void Cpu::call(uint16_t faddr, bool conditional) {
+    if(!conditional || registers.get_flag(z)) {
         push(PC);
         registers.write(PC, faddr);
     }
 }
-void Cpu::ret(bool condition, bool interrupt) {
-    if(!condition || registers.get_flag(z)) {
+void Cpu::ret(bool conditional, bool interrupt) {
+    if(!conditional || registers.get_flag(z)) {
         pop(PC);
     }
     if(interrupt) registers.enable_interrupts();

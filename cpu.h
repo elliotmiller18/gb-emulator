@@ -35,12 +35,15 @@ public:
     //TODO: implement (simulates one CPU cycle)
     void cycle(int cycles = 1);
     uint8_t get_current_opcode();
+    void print_state();
 
 // INSTRUCTION HANDLERS AND SIMPLE INSTRUCTIONS, SORTED BY OPCODE
 
     void noop();
     void ld_imm16_to_reg16();
     void ld_acc_to_memory();
+    void inc16_handler();
+    void step8_handler();
 
 // 8 bit transfer operations
     //NOTE: unimplemented for now, left here in case we want to use it for better hardware emulation
@@ -59,9 +62,9 @@ public:
     /// @return new value of SP 
     uint16_t pop(Register16 dest);
 // 8 bit arith operations
-    uint8_t add8(BinOpt8 arg, bool subtraction, bool carry = false, BinOpt dest = A);
+    uint8_t add8(BinOpt8 arg1, BinOpt8 arg2, bool subtraction, bool carry = false);
     uint8_t logical_operation8(BinOpt8 arg, LogicalOperation op);
-    uint8_t step8(bool increment);
+    uint8_t step8(BinOpt8 arg, bool increment);
     bool compare8(BinOpt8 arg);
 // 16 bit arith operations
     uint16_t add16(Register16 dest, Register16 operand);
@@ -98,9 +101,8 @@ public:
         /*0x00, NOP*/ &Cpu::noop,
         /*0x01, LD BC, d16*/ &Cpu::ld_imm16_to_reg16,
         /*0x02, LD [BC] A*/  &Cpu::ld_acc_to_memory,
-        /*0x12, LD [DE] A*/  &Cpu::ld_acc_to_memory,
-        /*0x12, LD [DE] A*/  &Cpu::ld_acc_to_memory,
-        /*0x22, LD [HL+] A*/ &Cpu::ld_acc_to_memory,
-        /*0x32, LD [HL-] A*/ &Cpu::ld_acc_to_memory,
+        /*0x03, INC BC*/     &Cpu::inc16_handler,
+        /*0x04, INC B*/      &Cpu::step8_handler,
+        /*0x05, DEC B*/      &Cpu::step8_handler,
     };
 };

@@ -3,7 +3,8 @@
 #include <variant>
 #include <stdexcept>
 
-Registers::Registers() {}
+// {} is the empty list, 0-inits 
+Registers::Registers() : registers({}){}
 
 Registers::~Registers() {}
 
@@ -55,7 +56,7 @@ void Registers::write_half(Register8 reg, BinOpt8 val) {
 }
 
 uint16_t Registers::read(Register16 reg) {
-    if(static_cast<int>(reg) > NUM_REGISTERS) throw std::invalid_argument("Invalid register16");
+    if(static_cast<int>(reg) >= NUM_REGISTERS) throw std::invalid_argument("Invalid register16");
     return registers[reg];
 }
 
