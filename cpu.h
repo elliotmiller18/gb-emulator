@@ -44,6 +44,7 @@ public:
     void ld_acc_to_memory();
     void inc16_handler();
     void step8_handler();
+    void ld_imm8_to_dest8();
 
 // 8 bit transfer operations
     //NOTE: unimplemented for now, left here in case we want to use it for better hardware emulation

@@ -2,6 +2,7 @@
 #include "register.h"
 #include <variant>
 #include <stdexcept>
+#include <iostream>
 
 // {} is the empty list, 0-inits 
 Registers::Registers() : registers({}){}
@@ -31,7 +32,7 @@ uint8_t Registers::unpack_binopt8(BinOpt8 val) {
 }
 
 uint16_t Registers::write(Register16 reg, BinOpt16 val) {
-    if(static_cast<int>(reg) > NUM_REGISTERS) throw std::invalid_argument("Invalid register16");
+    if(static_cast<int>(reg) > NUM_REGISTERS) throw std::invalid_argument("Invalid register16 at Registers::write");
     uint16_t unpacked_value = unpack_binopt16(val);
     registers[reg] = unpacked_value;
     return unpacked_value;
@@ -51,12 +52,12 @@ void Registers::write_half(Register8 reg, BinOpt8 val) {
             registers[half_reg_to_reg(reg)] |= unpacked_value;
             break;
         default:
-            throw std::invalid_argument("Invalid register8"); 
+            throw std::invalid_argument("Invalid register8 at Registers::write_half"); 
     }
 }
 
 uint16_t Registers::read(Register16 reg) {
-    if(static_cast<int>(reg) >= NUM_REGISTERS) throw std::invalid_argument("Invalid register16");
+    if(static_cast<int>(reg) >= NUM_REGISTERS) throw std::invalid_argument("Invalid register16 at Registers::read");
     return registers[reg];
 }
 
@@ -74,7 +75,7 @@ uint8_t Registers::read_half(Register8 reg) {
         case L:
             return static_cast<uint8_t>(registers[half_reg_to_reg(reg)]);
         default:
-            throw std::invalid_argument("Invalid register8"); 
+            throw std::invalid_argument("Invalid register8 at Registers::read_half"); 
     }
 }
 
@@ -92,7 +93,7 @@ Register16 Registers::half_reg_to_reg(Register8 reg) {
         case L:
             return HL;
         default:
-            throw std::invalid_argument("Invalid register8"); 
+            throw std::invalid_argument("Invalid register8 at Registers::half_reg_to_reg"); 
     }
 }
 

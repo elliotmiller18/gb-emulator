@@ -5,12 +5,25 @@
 #include <fstream>
 #include <variant>
 
-Memory::Memory(Registers& registers, const char* filename) : registers(registers) {
-    // read rom into memory
-    std::ifstream(filename, std::ios::binary).read(reinterpret_cast<char*>(memory.data()), memory.size());
+Memory::Memory(Registers& registers, const char* filename)
+  : registers(registers)
+{
+    std::ifstream file(filename, std::ios::binary | std::ios::ate);
+    if (!file.is_open()) {
+        throw std::runtime_error(std::string("Failed to open ROM: ") + filename);
+    }
+
+    auto size = file.tellg();
+    if (size < 0 || static_cast<std::size_t>(size) > memory.size()) {
+        throw std::runtime_error("ROM size is invalid or too large for memory");
+    }
+
+    file.seekg(0, std::ios::beg);
+    file.read(reinterpret_cast<char*>(memory.data()), size);
+    if (!file) {
+        throw std::runtime_error("Error while reading ROM into memory");
+    }
 }
-
-
 
 Memory::~Memory() {}
 

@@ -21,7 +21,7 @@ void Cpu::noop() {cycle();}
 
 void Cpu::ld_imm16_to_reg16() {
     uint8_t opcode = get_current_opcode();
-    Register16 dest = get_register16_from_opcode_bits(get_bits_from_range(opcode, 4, 5));
+    Register16 dest = get_register16_from_opcode_bits(get_bits_in_range(opcode, 4, 5));
     uint8_t lsb = fetch_and_inc();
     uint8_t msb = fetch_and_inc();
     registers.write(dest, combine_bytes(msb, lsb));
@@ -51,28 +51,32 @@ void Cpu::ld_acc_to_memory(){
 }
 
 void Cpu::inc16_handler(){
-    Register16 target = get_register16_from_opcode_bits(get_bits_from_range(get_current_opcode(), 4, 5));
+    Register16 target = get_register16_from_opcode_bits(get_bits_in_range(get_current_opcode(), 4, 5));
     registers.write(target, static_cast<uint16_t>(registers.read(target) + 1));
     cycle(2);
 }
 
+//TODO: SEE UTILS.CPP, REFACTOR THIS TO USE THAT NEW FUNCTION
 void Cpu::step8_handler() {
     int opcode = get_current_opcode();
-    int reg_bits = get_bits_from_range(opcode, 3, 5);
+    int dest_bits = get_bits_in_range(opcode, 3, 5);
     // the last nibble of inc8 is 0b100, dec8 is 0b101
     bool increment = get_bit(opcode, 0) == 0;
-    if(reg_bits < 0b110) step8(static_cast<Register8>(reg_bits+1), increment);
-    else if(reg_bits == 0b110) step8(A, increment);
-    //inc/dec [HL]
-    else {
+    RegisterOpt dest_opt = get_dest8_from_opcode_bits(dest_bits);
+    if(std::get_if<Register16>(&dest_opt)) {
         uint8_t byte = memory.read_byte(registers.read(HL));
         memory.write_byte(registers.read(HL), step8(byte, increment));
-        cycle(2);
+        cycle(3);
+        return;
     }
+    Register8 dest = std::get<Register8>(dest_opt);
+    registers.write_half(dest, step8(dest, increment));
     cycle(1);
 }
 
+void Cpu::ld_imm8_to_dest8() {
 
+}
 //IMPLEMENTATIONS
 
 uint8_t Cpu::add8(BinOpt8 arg1, BinOpt8 arg2, bool subtraction, bool carry) {
@@ -121,7 +125,7 @@ bool Cpu::compare8(BinOpt8 arg) {
 
 uint8_t Cpu::step8(BinOpt8 arg, bool increment) {
     bool old_flag = registers.get_flag(c);
-    uint8_t res = add8(arg, static_cast<uint8_t>(1), increment);
+    uint8_t res = add8(arg, static_cast<uint8_t>(1), !increment);
     registers.set_flag(c, old_flag);
     return res;
 }

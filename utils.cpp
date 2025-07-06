@@ -25,7 +25,7 @@ uint8_t Cpu::get_current_opcode() {
 
 void Cpu::print_state() {
     for(size_t r = 0; r < NUM_REGISTERS; r++) {
-        std::cout << "REGISTER " << r16_name(r) << ": " << std::hex << registers.read(static_cast<Register16>(r)) << "\n";
+        std::cout << "REGISTER " << r16_name(r) << ": 0x" << std::hex << registers.read(static_cast<Register16>(r)) << "\n";
     }
 }
 
@@ -44,15 +44,26 @@ bool get_bit(int target, int position) {
     return (target >> position) % 2 == 1;
 }
 
-/// start and end are inclusive
-int get_bits_from_range(int target, int start, int end) {
+/// start and end are both inclusive
+int get_bits_in_range(unsigned int target, unsigned int start, unsigned int end) {
+    if(start >= 16) throw std::invalid_argument("Simulating on a 16 bit system, start of range invalid");
+    if(end >= 16) throw std::invalid_argument("Simulating on a 16 bit system, end of range invalid");
+    if(end < start) throw std::invalid_argument("Invalid range, end must be geq start");
     // mask away all bits above end 
-    target = target & ~( (~0x0) << end );
-    return target >> start;
+    unsigned int mask = ~0x0;
+    mask = ~(mask << (end + 1));
+    return (target & mask) >> start;
 }
 
 uint16_t combine_bytes(uint8_t msb, uint8_t lsb) {
     return (msb << 8) | lsb;
+}
+
+/// returns either the register8 that the bits correspond to or HL if it is meant to be a memory read/write
+RegisterOpt get_dest8_from_opcode_bits(int bits) {
+    if(bits > 0b111) throw std::invalid_argument("Bits must be in the range 0b000 - 0b111");
+    if(bits == 0b110) return HL;
+    return bits == 0b111 ? A : static_cast<Register8>(bits+1);
 }
 
 /// 00 -> BC, 01 -> DE, 10 -> HL, 11 -> SP
