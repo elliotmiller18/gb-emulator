@@ -1,6 +1,6 @@
 # Compiler and flags
-CXX := g++
-CXXFLAGS := -Wall -Wextra -std=c++20 -I.
+CXX := clang++
+CXXFLAGS := -g -O0 -Wall -Wextra -std=c++20 -I.
 
 # Source files
 SRCS := $(shell find . -type f -name "*.cpp")

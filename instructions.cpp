@@ -13,72 +13,6 @@ constexpr uint8_t LOW_NIBBLE_THRESHOLD = 0x9;
 constexpr uint8_t FULL_BYTE_THRESHOLD = 0x99;
 constexpr std::string_view INVALID_ARG_MSG = "Unfortunately, there is no native 3 bit type in C++. Argument must be less than 0b111";
 
-//INSTRUCTION HANDLERS
-
-//TODO: double check if we can batch cycle like we do in ld_reg_16 or we need to cycle after each operation
-
-void Cpu::noop() {cycle();}
-
-void Cpu::ld_imm16_to_reg16() {
-    uint8_t opcode = get_current_opcode();
-    Register16 dest = get_register16_from_opcode_bits(get_bits_in_range(opcode, 4, 5));
-    uint8_t lsb = fetch_and_inc();
-    uint8_t msb = fetch_and_inc();
-    registers.write(dest, combine_bytes(msb, lsb));
-    cycle(3);
-}
-
-void Cpu::ld_acc_to_memory(){
-    // we'll only be here with opcode 00xx0010
-    uint8_t opcode = get_current_opcode();
-    switch(opcode >> 4) {
-        case 0b00:
-            memory.write_byte(BC, A);
-            break;
-        case 0b01:
-            memory.write_byte(DE, A);
-            break;
-        case 0b10:
-            memory.write_byte(HL, A);
-            registers.write(HL, static_cast<uint16_t>(registers.read(HL) + 1));
-            break;
-        case 0b11:
-            memory.write_byte(HL, A);
-            registers.write(HL, static_cast<uint16_t>(registers.read(HL) - 1));
-            break;
-    }
-    cycle(2);
-}
-
-void Cpu::inc16_handler(){
-    Register16 target = get_register16_from_opcode_bits(get_bits_in_range(get_current_opcode(), 4, 5));
-    registers.write(target, static_cast<uint16_t>(registers.read(target) + 1));
-    cycle(2);
-}
-
-//TODO: SEE UTILS.CPP, REFACTOR THIS TO USE THAT NEW FUNCTION
-void Cpu::step8_handler() {
-    int opcode = get_current_opcode();
-    int dest_bits = get_bits_in_range(opcode, 3, 5);
-    // the last nibble of inc8 is 0b100, dec8 is 0b101
-    bool increment = get_bit(opcode, 0) == 0;
-    RegisterOpt dest_opt = get_dest8_from_opcode_bits(dest_bits);
-    if(std::get_if<Register16>(&dest_opt)) {
-        uint8_t byte = memory.read_byte(registers.read(HL));
-        memory.write_byte(registers.read(HL), step8(byte, increment));
-        cycle(3);
-        return;
-    }
-    Register8 dest = std::get<Register8>(dest_opt);
-    registers.write_half(dest, step8(dest, increment));
-    cycle(1);
-}
-
-void Cpu::ld_imm8_to_dest8() {
-
-}
-//IMPLEMENTATIONS
-
 uint8_t Cpu::add8(BinOpt8 arg1, BinOpt8 arg2, bool subtraction, bool carry) {
     uint8_t unpacked1 = registers.unpack_binopt8(arg1);
     uint8_t unpacked2 = registers.unpack_binopt8(arg2);
@@ -290,7 +224,7 @@ uint8_t Cpu::swap(BinOpt8 operand) {
     registers.set_flag(n, 0);
     registers.set_flag(c, 0);
     // contents of original bit 0
-    return (lsb(unpacked) << 4) | msb(unpacked);
+    return (lsb_16(unpacked) << 4) | msb_16(unpacked);
 }
 
 uint16_t Cpu::load_to_reg16(Register16 dest, BinOpt16 arg) {

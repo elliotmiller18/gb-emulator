@@ -62,8 +62,8 @@ bool Memory::write_word(BinOpt addr, BinOpt16 val) {
     uint16_t unpacked_value = registers.unpack_binopt16(val);
     uint16_t unpacked_addr = unpack_addr(addr);
 
-    uint8_t upper_bits = msb(unpacked_value);
-    uint8_t lower_bits = lsb(unpacked_value);
+    uint8_t upper_bits = msb_16(unpacked_value);
+    uint8_t lower_bits = lsb_16(unpacked_value);
 
     if(GB_CPU_BIG_ENDIAN) {
         uint8_t temp = upper_bits;

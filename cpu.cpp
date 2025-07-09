@@ -3,7 +3,7 @@
 #include <iostream>
 
 void Cpu::cycle(int cycles) {
-    std::cout << "cycling\n";    
+    for(int i = 0; i < cycles; i++) {/*std::cout << "cycling\n";*/}
 }
 
 int Cpu::fetch_and_inc() {

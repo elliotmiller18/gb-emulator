@@ -31,12 +31,24 @@ void Cpu::print_state() {
 
 // BIT OPERATIONS
 
-int msb(uint16_t val) {
+/// returns 8 most significant bits
+int msb_16(uint16_t val) {
     return val >> 8;
 }
 
-int lsb(uint16_t val) {
+/// returns 4 most significant bits
+int msb_8(uint8_t val) {
+    return val >> 4;
+}
+
+/// returns 8 least significant bits
+int lsb_16(uint16_t val) {
     return static_cast<uint8_t>(val);
+}
+
+/// returns 4 least significant bits
+int lsb_8(uint8_t val) {
+    return val & 0xFF;
 }
 
 
@@ -59,8 +71,8 @@ uint16_t combine_bytes(uint8_t msb, uint8_t lsb) {
     return (msb << 8) | lsb;
 }
 
-/// returns either the register8 that the bits correspond to or HL if it is meant to be a memory read/write
-RegisterOpt get_dest8_from_opcode_bits(int bits) {
+/// returns destination from schema 0b000 - 0b100 = Registers B-L, 0b110 = Memory[HL], 0b111 = Reg A
+RegisterOpt get_dest8_from_bits(int bits) {
     if(bits > 0b111) throw std::invalid_argument("Bits must be in the range 0b000 - 0b111");
     if(bits == 0b110) return HL;
     return bits == 0b111 ? A : static_cast<Register8>(bits+1);
