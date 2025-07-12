@@ -34,7 +34,7 @@ enum Flag {
 using RegisterOpt = std::variant<Register16, Register8>;
 /// Any 16 bit argument, typically used for addressing.
 using BinOpt16 = std::variant<Register16, uint16_t>;
-// Any 8 bit argument
+/// Any 8 bit argument
 using BinOpt8 = std::variant<Register8, uint8_t>;
 /// Any binary argument, so a 16/8 bit value or a full/half register.
 using BinOpt = std::variant<BinOpt16, BinOpt8>;

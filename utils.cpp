@@ -16,6 +16,25 @@ std::string r16_name(int bits) {
     }
 }
 
+void Cpu::cycle(int cycles) {
+    for(int i = 0; i < cycles; i++) {/*std::cout << "cycling\n";*/}
+}
+
+uint8_t Cpu::fetch_and_inc() {
+    uint16_t old_pc = registers.read(PC);
+    registers.write(PC, static_cast<uint16_t>(old_pc+1));
+    return memory.read_byte(old_pc);
+}
+
+uint16_t Cpu::fetch_and_inc_imm_16() {
+    uint16_t old_pc = registers.read(PC);
+    uint8_t lsb = memory.read_byte(old_pc);
+    uint8_t msb = memory.read_byte(static_cast<uint16_t>(old_pc + 1));
+    registers.write(PC, static_cast<uint16_t>(old_pc + 2));
+    if(GB_CPU_BIG_ENDIAN) {std::swap(lsb, msb);}
+    return combine_bytes(msb, lsb);
+}
+
 uint8_t Cpu::get_current_opcode() {
     // THIS WILL RELIABLY NEVER BE CALLED DIRECTLY AFTER A JUMP EXECUTES, OR WHEN PC == 0
     // still we have a sanity check here that I'll remove when I'm optimizing everyting

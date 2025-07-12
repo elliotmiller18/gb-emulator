@@ -30,7 +30,8 @@ public:
     };
     
 // NON-INSTRUCTIONS
-    int fetch_and_inc();
+    uint8_t fetch_and_inc();
+    uint16_t fetch_and_inc_imm_16();
     int execute();
     //TODO: implement (simulates one CPU cycle)
     void cycle(int cycles = 1);
@@ -39,12 +40,18 @@ public:
 
 // INSTRUCTION HANDLERS AND SIMPLE INSTRUCTIONS, SORTED BY OPCODE
 
+// handler means it uses something in instructions.cpp
     void noop();
     void ld_imm16_to_reg16();
     void ld_acc_to_memory();
-    void inc16_handler();
+    void step16_handler();
     void step8_handler();
     void ld_imm8_to_dest8();
+    void rotate_left_handler();
+    void ld_sp_to_mem();
+    void add_hl_handler();
+    void ld_mem8_to_a();
+    void rotate_right_handler();
 
 // 8 bit transfer operations
     //NOTE: unimplemented for now, left here in case we want to use it for better hardware emulation
@@ -102,7 +109,7 @@ public:
         /*0x00, NOP*/ &Cpu::noop,
         /*0x01, LD BC, d16*/ &Cpu::ld_imm16_to_reg16,
         /*0x02, LD [BC] A*/  &Cpu::ld_acc_to_memory,
-        /*0x03, INC BC*/     &Cpu::inc16_handler,
+        /*0x03, INC BC*/     &Cpu::step16_handler,
         /*0x04, INC B*/      &Cpu::step8_handler,
         /*0x05, DEC B*/      &Cpu::step8_handler,
     };
