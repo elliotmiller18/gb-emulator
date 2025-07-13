@@ -92,7 +92,7 @@ void Cpu::ld_imm8_to_dest8() {
 
 void Cpu::rotate_left_handler() {
     // opcode is 0x000*0111 where bit 4 corresponds to whether or not carry is enabled (see func def)
-    registers.write_half(A, rotate_left(A, get_bit(get_current_opcode(), 4)));
+    registers.write_half(A, rotate_left(A, get_bit(get_current_opcode(), 4) == 0));
     cycle(1);
 }
 
@@ -131,6 +131,48 @@ void Cpu::ld_mem8_to_a(){
 
 void Cpu::rotate_right_handler() {
     // opcode is 0x000*1111 where bit 4 corresponds to whether or not carry is enabled (see func def)
-    registers.write_half(A, rotate_right(A, get_bit(get_current_opcode(), 4)));
+    registers.write_half(A, rotate_right(A, get_bit(get_current_opcode(), 4) == 0));
     cycle(1);
+}
+
+void Cpu::stop() {
+    //TODO:
+}
+
+void Cpu::jr() {
+    bool condition;
+    uint8_t offset = fetch_and_inc();
+    switch(msb_8(get_current_opcode())) {
+        case 2:
+            condition = registers.get_flag(z);
+            cycle(1);
+            break;
+        case 3:
+            condition = registers.get_flag(c);
+            cycle(1);
+            break;
+        default:
+            // unconditional jump
+            condition = true;
+            break;
+    }
+    if(lsb_8(get_current_opcode()) == 0) condition = !condition;
+    if(condition) {
+        registers.write(PC, static_cast<uint16_t>(registers.read(PC) + offset));
+        cycle(2);
+    }
+}
+
+void Cpu::daa_handler() {
+    cycle(1);
+    registers.write_half(A, decimal_adjust_acc());
+}
+
+void Cpu::cpl_handler() {
+    cycle(1);
+    registers.write_half(A, complement_accumulator());
+}
+
+void Cpu::scf_handler() {
+    //TODO: move func from instructions.cpp here
 }
