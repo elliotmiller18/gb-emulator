@@ -70,16 +70,12 @@ void Cpu::ld_imm8_to_dest8() {
     uint8_t imm8;
     RegisterOpt dest = get_dest8_from_bits(get_bits_in_range(opcode, VERTICAL_VAL8_START, VERTICAL_VAL8_END));
     if(msb_8(opcode) <= 0x3) {
+        if(lsb_8(opcode) != 0x6 && lsb_8(opcode) != 0xE) throw std::invalid_argument("Bad opcode in ld_imm8_to_dest8");
         imm8 = fetch_and_inc();
         cycle();
     } else {
         // bottom 3 bits
-        RegisterOpt val = get_dest8_from_bits(opcode % 8);
-        if(std::get_if<Register16>(&val)) {
-            imm8 = memory.read_byte(registers.read(HL));
-            cycle();
-        }
-        else imm8 = registers.read_half(std::get<Register8>(val));
+        imm8 = get_imm8_from_arg_bits(opcode % 8);
     }
 
     if(std::get_if<Register16>(&dest)) {
@@ -109,7 +105,7 @@ void Cpu::add_hl_handler() {
     cycle(2);
 }
 
-void Cpu::ld_mem8_to_a(){
+void Cpu::ld_mem8_to_acc(){
     switch(get_current_opcode() >> 4) {
         case 0:
             registers.write_half(A, memory.read_byte(registers.read(BC)));
@@ -118,11 +114,11 @@ void Cpu::ld_mem8_to_a(){
             registers.write_half(A, memory.read_byte(registers.read(DE)));
             break;
         case 2:
-            registers.write_half(A, memory.read_byte(registers.read(DE)));
+            registers.write_half(A, memory.read_byte(registers.read(HL)));
             registers.write(HL, static_cast<uint16_t>(registers.read(HL) - 1));
             break;
         case 3:
-            registers.write_half(A, memory.read_byte(registers.read(DE)));
+            registers.write_half(A, memory.read_byte(registers.read(HL)));
             registers.write(HL, static_cast<uint16_t>(registers.read(HL) + 1));
             break;
     }
@@ -136,7 +132,8 @@ void Cpu::rotate_right_handler() {
 }
 
 void Cpu::stop() {
-    //TODO:
+    cycle();
+    registers.disable_interrupts();
 }
 
 void Cpu::jr() {
@@ -174,5 +171,28 @@ void Cpu::cpl_handler() {
 }
 
 void Cpu::scf_handler() {
-    //TODO: move func from instructions.cpp here
+    cycle(1);
+    set_carry_flag();
+}
+
+void Cpu::ccf_handler() {
+    cycle(1);
+    complement_carry_flag();
+}
+
+void Cpu::halt() {
+    //TODO: implement when we have interrupts done
+    cycle(1);
+    registers.disable_interrupts();
+}
+
+void Cpu::add8_handler() {
+    uint8_t opcode = get_current_opcode();
+    uint8_t operand = get_imm8_from_arg_bits(opcode % 8);
+    //add is 0b1000xxxx, where the first 3 bits are the operand the last bit of the lower nibble is the carry flag
+    bool carry = get_bit(opcode, 3);
+    //sub is 0b1001xxxx
+    bool subtraction = get_bit(opcode, 4);
+    registers.write_half(A, add8(A, operand, subtraction, carry));
+    cycle(1);
 }

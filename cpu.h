@@ -34,6 +34,7 @@ public:
     void cycle(int cycles = 1);
     uint8_t get_current_opcode();
     void print_state();
+    uint8_t get_imm8_from_arg_bits(int bits);
 
 // INSTRUCTION HANDLERS AND SIMPLE INSTRUCTIONS, SORTED BY OPCODE
 
@@ -47,7 +48,7 @@ public:
     void rotate_left_handler();
     void ld_sp_to_mem();
     void add_hl_handler();
-    void ld_mem8_to_a();
+    void ld_mem8_to_acc();
     void rotate_right_handler();
     void stop();
     void jr();
@@ -55,6 +56,9 @@ public:
     void cpl_handler();
     void scf_handler();
     void ccf_handler();
+    void halt();
+    void add8_handler();
+    void logical_op8_handler();
 
 // 8 bit transfer operations
     //NOTE: unimplemented for now, left here in case we want to use it for better hardware emulation

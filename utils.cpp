@@ -42,6 +42,15 @@ uint8_t Cpu::get_current_opcode() {
     return memory.read_byte(static_cast<uint16_t>(registers.read(PC) - 1));
 }
 
+uint8_t Cpu::get_imm8_from_arg_bits(int bits) {
+    RegisterOpt val = get_dest8_from_bits(bits);
+    if(std::get_if<Register16>(&val)) {
+        cycle(1);
+        return memory.read_byte(registers.read(HL));
+    }
+    return registers.read_half(std::get<Register8>(val));
+}
+
 void Cpu::print_state() {
     for(size_t r = 0; r < NUM_REGISTERS; r++) {
         std::cout << "REGISTER " << r16_name(r) << ": 0x" << std::hex << registers.read(static_cast<Register16>(r)) << "\n";
