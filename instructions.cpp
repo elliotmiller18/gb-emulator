@@ -51,12 +51,6 @@ uint8_t Cpu::logical_operation8(BinOpt8 arg, LogicalOperation op) {
     return result;
 }
 
-bool Cpu::compare8(BinOpt8 arg) {
-    // compares are just a subtraction
-    add8(A, arg, true);
-    return registers.get_flag(z) == 0;
-}
-
 uint8_t Cpu::step8(BinOpt8 arg, bool increment) {
     bool old_flag = registers.get_flag(c);
     uint8_t res = add8(arg, static_cast<uint8_t>(1), !increment);

@@ -31,6 +31,9 @@ uint8_t Registers::unpack_binopt8(BinOpt8 val) {
     else throw std::invalid_argument("Invalid BinOpt8 type");
 }
 
+//TODO: from discord:
+// changing PC normally incurs a 1 m-cycle penalty
+// only 2 opcodes do not have this penalty (jp hl and rst), which use some hardware trickery to avoid the penalty
 uint16_t Registers::write(Register16 reg, BinOpt16 val) {
     if(static_cast<int>(reg) > NUM_REGISTERS) throw std::invalid_argument("Invalid register16 at Registers::write");
     uint16_t unpacked_value = unpack_binopt16(val);

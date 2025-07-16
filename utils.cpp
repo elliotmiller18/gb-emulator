@@ -36,10 +36,7 @@ uint16_t Cpu::fetch_and_inc_imm_16() {
 }
 
 uint8_t Cpu::get_current_opcode() {
-    // THIS WILL RELIABLY NEVER BE CALLED DIRECTLY AFTER A JUMP EXECUTES, OR WHEN PC == 0
-    // still we have a sanity check here that I'll remove when I'm optimizing everyting
-    if(registers.read(PC) == 0) throw std::logic_error("Trying to fetch opcode with PC already at 0");
-    return memory.read_byte(static_cast<uint16_t>(registers.read(PC) - 1));
+    return current_opcode;
 }
 
 uint8_t Cpu::get_imm8_from_arg_bits(int bits) {

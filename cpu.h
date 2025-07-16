@@ -15,6 +15,7 @@ class Cpu {
 public:
     Registers registers;
     Memory memory;
+    int current_opcode;
 
     Cpu(const char* filename) : registers(Registers()), memory(registers, filename) {}
     Cpu() : registers(Registers()), memory(registers) {}
@@ -59,6 +60,11 @@ public:
     void halt();
     void add8_handler();
     void logical_op8_handler();
+    void cp_handler();
+    //TODO: implement after research
+    void ret();
+    void pop();
+    void jp();
 
 // 8 bit transfer operations
     //NOTE: unimplemented for now, left here in case we want to use it for better hardware emulation
@@ -80,7 +86,6 @@ public:
     uint8_t add8(BinOpt8 arg1, BinOpt8 arg2, bool subtraction, bool carry = false);
     uint8_t logical_operation8(BinOpt8 arg, LogicalOperation op);
     uint8_t step8(BinOpt8 arg, bool increment);
-    bool compare8(BinOpt8 arg);
 // 16 bit arith operations
     uint16_t add16(Register16 dest, Register16 operand);
     uint16_t add_sp_signed(int8_t operand);
@@ -95,7 +100,8 @@ public:
     uint16_t jump_cc(uint16_t addr);
     // ---- unimplemented
     void call(uint16_t faddr, bool condition = false);
-    void ret(bool condition = false, bool interrupt = false);
+    [[deprecated("Ret is deprecated, Use ret handler in handlers.cpp instead")]]
+    void ret(bool conditional = false, bool interrupt = false);
 // bit operations
     /// tests reg[bit] and sets the zero flag accordingly
     bool bit(int bit, BinOpt8 arg);
