@@ -61,10 +61,30 @@ public:
     void add8_handler();
     void logical_op8_handler();
     void cp_handler();
-    //TODO: implement after research
+    //TODO: verify after research
     void ret();
     void pop();
     void jp();
+    void call();
+    void push();
+    //TODO: implement later
+    void rst();
+
+    //TODO: implement when we do interrupts
+    void reti();
+    //TODO: implement when we implement prefixed instructions
+    void cb_prefix();
+    void e_prefixed_ld();
+    void add_sp_e8_handler();
+    void f_prefixed_ld();
+    //TODO: implement
+    void di();  
+    void add_sp_e8_to_hl();
+    void ld_sp_hl();
+    //TODO: implement
+    void ei();
+    
+
 
 // 8 bit transfer operations
     //NOTE: unimplemented for now, left here in case we want to use it for better hardware emulation

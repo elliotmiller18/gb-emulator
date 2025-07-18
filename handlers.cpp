@@ -52,8 +52,8 @@ void Cpu::step8_handler() {
     bool increment = get_bit(opcode, 0) == 0;
     RegisterOpt dest_opt = get_dest8_from_bits(dest_bits);
     if(std::get_if<Register16>(&dest_opt)) {
-        uint8_t byte = memory.read_byte(registers.read(HL));
-        memory.write_byte(registers.read(HL), step8(byte, increment));
+        uint8_t byte = memory.read_byte(HL);
+        memory.write_byte(HL, step8(byte, increment));
         return;
     }
     Register8 dest = std::get<Register8>(dest_opt);
@@ -72,7 +72,7 @@ void Cpu::ld_imm8_to_dest8() {
     }
 
     if(std::get_if<Register16>(&dest)) {
-        memory.write_byte(registers.read(HL), imm8);
+        memory.write_byte(HL, imm8);
     }
     else registers.write_half(std::get<Register8>(dest), imm8);
 }
@@ -84,7 +84,7 @@ void Cpu::rotate_left_handler() {
 
 void Cpu::ld_sp_to_mem() {
     uint16_t addr = fetch_and_inc_imm_16();
-    memory.write_word(addr, registers.read(SP));
+    memory.write_word(addr, SP);
 }
 
 void Cpu::add_hl_handler() {
@@ -96,17 +96,17 @@ void Cpu::add_hl_handler() {
 void Cpu::ld_mem8_to_acc(){
     switch(get_current_opcode() >> 4) {
         case 0:
-            registers.write_half(A, memory.read_byte(registers.read(BC)));
+            registers.write_half(A, memory.read_byte(BC));
             break;
         case 1:
-            registers.write_half(A, memory.read_byte(registers.read(DE)));
+            registers.write_half(A, memory.read_byte(DE));
             break;
         case 2:
-            registers.write_half(A, memory.read_byte(registers.read(HL)));
+            registers.write_half(A, memory.read_byte(HL));
             registers.write(HL, static_cast<uint16_t>(registers.read(HL) - 1));
             break;
         case 3:
-            registers.write_half(A, memory.read_byte(registers.read(HL)));
+            registers.write_half(A, memory.read_byte(HL));
             registers.write(HL, static_cast<uint16_t>(registers.read(HL) + 1));
             break;
     } 
@@ -196,14 +196,21 @@ void Cpu::cp_handler() {
     add8(A, get_imm8_from_arg_bits(current_opcode % 8), true);
 }
 
+void Cpu::ret() {
+    bool condition = true;
+    if((current_opcode & 0b111) == 0){
+        condition = msb_8(current_opcode) == 0xC ? registers.get_flag(z) : registers.get_flag(c);
+        // ret cc or ret not cc
+        condition = lsb_8(current_opcode) == 0x8 ? condition : !condition;
+    }
+    if(!condition) return;
+    registers.write(PC, memory.read_word_and_inc_sp());
+}
+
 void Cpu::pop() {
     int reg_bits = get_bits_in_range(current_opcode, 4, 5);
     Register16 dest = reg_bits == 0b11 ? AF : static_cast<Register16>(reg_bits + 1);
-    uint16_t old_sp = registers.read(SP);
-    registers.write(dest, memory.read_word(old_sp));
-
-    old_sp += 2;
-    registers.write(SP, old_sp);
+    registers.write(dest, memory.read_word_and_inc_sp());
 }
 
 void Cpu::jp() {
@@ -219,4 +226,65 @@ void Cpu::jp() {
     else new_addr = fetch_and_inc_imm_16();
 
     if(condition) registers.write(PC, new_addr);
+}
+
+void Cpu::call() {
+    bool condition = true;
+    if((current_opcode & 0b11) == 0) {
+        condition = msb_8(current_opcode) == 0xC ? registers.get_flag(z) : registers.get_flag(c);
+        // call cc or call not cc
+        condition = lsb_8(current_opcode) == 0xC ? condition : !condition;
+    }
+    if(!condition) return;
+    uint8_t addr = fetch_and_inc_imm_16();
+    memory.write_word_and_dec_sp(PC);
+    registers.write(PC, addr);
+}
+
+void Cpu::e_prefixed_ld() {
+    uint16_t addr;
+    switch(lsb_8(current_opcode)) {
+        case(0x0):
+            addr = fetch_and_inc() + 0xFF00;
+            break;
+        case(0x2):
+            addr = registers.read_half(C) + 0xFF00;
+            break;
+        case(0xA):
+            addr = fetch_and_inc_imm_16();
+            break;
+        default:
+            throw std::logic_error("Invalid opcode");
+    }
+    memory.write_byte(addr, registers.read_half(A));
+}
+
+void Cpu::add_sp_e8_handler() {
+    registers.write(SP, add_sp_signed(static_cast<int8_t>(fetch_and_inc())));
+}
+
+void Cpu::f_prefixed_ld() {
+    uint16_t addr;
+    switch(lsb_8(current_opcode)) {
+        case(0x0):
+            addr = fetch_and_inc() + 0xFF00;
+            break;
+        case(0x2):
+            addr = registers.read_half(C) + 0xFF00;
+            break;
+        case(0xA):
+            addr = fetch_and_inc_imm_16();
+            break;
+        default:
+            throw std::logic_error("Invalid opcode");
+    }
+    registers.write_half(A, memory.read_byte(addr));
+}
+
+void Cpu::add_sp_e8_to_hl() {
+    registers.write(HL, add_sp_signed(static_cast<int8_t>(fetch_and_inc())));
+}
+
+void Cpu::ld_sp_hl() {
+    registers.write(SP, HL);
 }

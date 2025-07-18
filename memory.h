@@ -20,7 +20,9 @@ public:
     ~Memory();
     uint16_t unpack_addr(BinOpt addr);
     uint16_t read_word(BinOpt addr);
+    uint16_t read_word_and_inc_sp();
     uint8_t read_byte(BinOpt addr);
+    void write_word_and_dec_sp(BinOpt16 val);
     bool write_word(BinOpt addr, BinOpt16 val);
     bool write_byte(BinOpt addr, BinOpt8 byte);
 };

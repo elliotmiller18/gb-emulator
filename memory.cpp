@@ -35,6 +35,12 @@ uint16_t Memory::unpack_addr(BinOpt addr) {
     }
 }
 
+uint16_t Memory::read_word_and_inc_sp() {
+    uint16_t data = read_word(registers.read(SP));
+    registers.write(SP, static_cast<uint16_t>(registers.read(PC) - 2));
+    return data;
+}
+
 /** reads from addr and addr + 1 constructing based on whether or not GB_CPU_BIG_ENDIAN is true or false */
 uint16_t Memory::read_word(BinOpt addr) {
     // TODO: validate implementation
@@ -74,6 +80,12 @@ bool Memory::write_word(BinOpt addr, BinOpt16 val) {
     memory[unpacked_addr + 1] = upper_bits;
     memory[unpacked_addr] = lower_bits;
     return true;
+}
+
+/// decrements, then writes
+void Memory::write_word_and_dec_sp(BinOpt16 val) {
+    registers.write(SP, static_cast<uint16_t>(registers.read(SP) - 2));
+    write_word(registers.read(SP), val);
 }
 
 bool Memory::write_byte(BinOpt addr, BinOpt8 val) {
