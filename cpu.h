@@ -37,9 +37,7 @@ public:
     void print_state();
     uint8_t get_imm8_from_arg_bits(int bits);
 
-// INSTRUCTION HANDLERS AND SIMPLE INSTRUCTIONS, SORTED BY OPCODE
-
-// handler means it uses something in instructions.cpp
+// REGULAR INSTRUCTION HANDLERS
     void noop();
     void ld_imm16_to_reg16();
     void ld_acc_to_memory();
@@ -83,20 +81,10 @@ public:
     void ld_sp_hl();
     //TODO: implement
     void ei();
-    
 
 
-// 8 bit transfer operations
-    //NOTE: unimplemented for now, left here in case we want to use it for better hardware emulation
-    uint8_t load_to_reg8(Register8 dest, BinOpt8 arg);
-    uint8_t load_to_mem8(BinOpt8 arg);
+/// OLD INSTRUCTIONS, mostly just used for reference
 // 16 bit transfer operations
-    uint16_t load_to_reg16(Register16 dest, BinOpt16 arg);
-    // not implemented for now as the behavior is identical to add_sp_signed, the only difference is how the result is used
-    uint16_t ldhl_sp(int8_t operand);
-    /// @brief pushes a value onto stack and decrements SP by 2
-    /// @param arg register to be stored onto the stack
-    /// @return new value of SP 
     uint16_t push(Register16 arg);
     /// @brief pops a value off of stack, stores it in dest and increments SP by 2
     /// @param dest destination regiser
@@ -109,19 +97,12 @@ public:
 // 16 bit arith operations
     uint16_t add16(Register16 dest, Register16 operand);
     uint16_t add_sp_signed(int8_t operand);
-    uint16_t step16(Register16 dest, bool increment);
     bool complement_carry_flag();
     bool set_carry_flag();
     uint8_t complement_accumulator();
     uint8_t decimal_adjust_acc();
 // control flow
-    // ---- TODO: left unimplemented for now because they're so simple ---
-    uint16_t jump(uint16_t addr);
-    uint16_t jump_cc(uint16_t addr);
-    // ---- unimplemented
     void call(uint16_t faddr, bool condition = false);
-    [[deprecated("Ret is deprecated, Use ret handler in handlers.cpp instead")]]
-    void ret(bool conditional = false, bool interrupt = false);
 // bit operations
     /// tests reg[bit] and sets the zero flag accordingly
     bool bit(int bit, BinOpt8 arg);

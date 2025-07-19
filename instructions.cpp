@@ -221,17 +221,6 @@ uint8_t Cpu::swap(BinOpt8 operand) {
     return (lsb_16(unpacked) << 4) | msb_16(unpacked);
 }
 
-uint16_t Cpu::load_to_reg16(Register16 dest, BinOpt16 arg) {
-    if(std::holds_alternative<uint16_t>(arg)) {
-        if(dest == AF || dest == PC) throw std::logic_error("Cannot load to PC or AF using this instruction");
-    } else {
-        if(dest != SP) throw std::logic_error("Must load to SP using this instruction");
-    }
-
-    registers.write(dest, registers.unpack_binopt16(arg));
-    return registers.read(dest);
-}
-
 uint16_t Cpu::push(Register16 arg){
     uint16_t addr = registers.read(SP) - 2;
     uint16_t val = registers.read(arg);
@@ -251,11 +240,5 @@ void Cpu::call(uint16_t faddr, bool conditional) {
         push(PC);
         registers.write(PC, faddr);
     }
-}
-void Cpu::ret(bool conditional, bool interrupt) {
-    if(!conditional || registers.get_flag(z)) {
-        pop(PC);
-    }
-    if(interrupt) registers.enable_interrupts();
 }
 
