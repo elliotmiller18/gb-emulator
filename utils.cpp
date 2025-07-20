@@ -39,10 +39,9 @@ uint8_t Cpu::get_current_opcode() {
     return current_opcode;
 }
 
-uint8_t Cpu::get_imm8_from_arg_bits(int bits) {
+uint8_t Cpu::get_imm8_from_bits(int bits) {
     RegisterOpt val = get_dest8_from_bits(bits);
     if(std::get_if<Register16>(&val)) {
-        cycle(1);
         return memory.read_byte(registers.read(HL));
     }
     return registers.read_half(std::get<Register8>(val));
@@ -52,6 +51,29 @@ void Cpu::print_state() {
     for(size_t r = 0; r < NUM_REGISTERS; r++) {
         std::cout << "REGISTER " << r16_name(r) << ": 0x" << std::hex << registers.read(static_cast<Register16>(r)) << "\n";
     }
+}
+
+uint16_t Cpu::get_e_or_f_prefixed_ld_addr(int opcode) {
+    switch(lsb_8(opcode)) {
+        case(0x0):
+            return fetch_and_inc() + 0xFF00;
+        case(0x2):
+            return registers.read_half(C) + 0xFF00;
+            break;
+        case(0xA):
+            return fetch_and_inc_imm_16();
+        default:
+            throw std::logic_error("Invalid opcode");
+    }
+}
+
+void Cpu::write_to_dest8(RegisterOpt dest, uint8_t imm8) {
+    std::visit([imm8, this](auto&& dest) mutable {
+        using dest_type = std::decay_t<decltype(dest)>;
+        if constexpr(std::is_same_v<Register8, dest_type>) registers.write_half(dest, imm8);
+        else if constexpr(std::is_same_v<Register16, dest_type>) memory.write_byte(HL, imm8);
+        else throw std::runtime_error("Invalid destination in ld_reg_or_memref_to_dest8");
+    }, get_dest8_from_bits(current_opcode));
 }
 
 // BIT OPERATIONS
@@ -104,8 +126,9 @@ RegisterOpt get_dest8_from_bits(int bits) {
 }
 
 /// 00 -> BC, 01 -> DE, 10 -> HL, 11 -> SP
-Register16 get_register16_from_opcode_bits(int bits) {
-    // 00 should be BC, as AF is never referenced directly as we don't want to set the flag bits
+Register16 get_register16_from_opcode(int opcode) {
+    int bits = get_bits_in_range(opcode, 4, 5);
+    // 00 should be BC, AF is rarely referenced directly as we don't want to set the flag bits
     Register16 dest = static_cast<Register16>(bits + 1);
     if(dest == AF || dest == PC) throw std::invalid_argument("Must be within the range 0b00 (BC) - 0b11 (SP)");
     return dest;

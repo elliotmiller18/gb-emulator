@@ -30,12 +30,13 @@ public:
 // NON-INSTRUCTIONS
     uint8_t fetch_and_inc();
     uint16_t fetch_and_inc_imm_16();
-    int execute();
     //TODO: implement (simulates one CPU cycle)
     void cycle(int cycles = 1);
     uint8_t get_current_opcode();
     void print_state();
-    uint8_t get_imm8_from_arg_bits(int bits);
+    uint8_t get_imm8_from_bits(int bits);
+    uint16_t get_e_or_f_prefixed_ld_addr(int opcode);
+    void write_to_dest8(RegisterOpt dest, uint8_t imm8);
 
 // REGULAR INSTRUCTION HANDLERS
     void noop();
@@ -52,9 +53,11 @@ public:
     void stop();
     void jr();
     void daa_handler();
-    void cpl_handler();
-    void scf_handler();
-    void ccf_handler();
+    void complement_acc();
+    void set_carry_flag();
+    void complement_carry_flag();
+    void ld_reg_or_memref_to_dest8();
+    //TODO: implement when we do interrupts
     void halt();
     void add8_handler();
     void logical_op8_handler();
@@ -75,21 +78,15 @@ public:
     void e_prefixed_ld();
     void add_sp_e8_handler();
     void f_prefixed_ld();
-    //TODO: implement
+    //TODO: implement when we do interrupts
     void di();  
     void add_sp_e8_to_hl();
     void ld_sp_hl();
-    //TODO: implement
+    //TODO: implement when we do interrupts
     void ei();
 
 
 /// OLD INSTRUCTIONS, mostly just used for reference
-// 16 bit transfer operations
-    uint16_t push(Register16 arg);
-    /// @brief pops a value off of stack, stores it in dest and increments SP by 2
-    /// @param dest destination regiser
-    /// @return new value of SP 
-    uint16_t pop(Register16 dest);
 // 8 bit arith operations
     uint8_t add8(BinOpt8 arg1, BinOpt8 arg2, bool subtraction, bool carry = false);
     uint8_t logical_operation8(BinOpt8 arg, LogicalOperation op);
@@ -97,19 +94,14 @@ public:
 // 16 bit arith operations
     uint16_t add16(Register16 dest, Register16 operand);
     uint16_t add_sp_signed(int8_t operand);
-    bool complement_carry_flag();
-    bool set_carry_flag();
-    uint8_t complement_accumulator();
     uint8_t decimal_adjust_acc();
-// control flow
-    void call(uint16_t faddr, bool condition = false);
 // bit operations
     /// tests reg[bit] and sets the zero flag accordingly
     bool bit(int bit, BinOpt8 arg);
     /// sets provided bit to 0
-    uint8_t res(int bit, BinOpt8 arg);
+    uint8_t reset_bit(int bit, BinOpt8 arg);
     /// sets provided bit to 1
-    uint8_t set(int bit, BinOpt8 arg);
+    uint8_t set_bit(int bit, BinOpt8 arg);
     uint8_t shift_left(BinOpt8 operand);
     uint8_t shift_right(BinOpt8 operand, bool preserveBit7);
     /// @param carry if true, but 0 is set to bit 7, if false, bit 0 is set to CY (confusing, I know)

@@ -113,28 +113,6 @@ uint8_t Cpu::decimal_adjust_acc() {
     return res;
 }
 
-bool Cpu::complement_carry_flag() {
-    registers.set_flag(n, 0);
-    registers.set_flag(h, 0);
-    registers.set_flag(c, !registers.get_flag(c));
-    return registers.get_flag(c);
-}
-
-bool Cpu::set_carry_flag() {
-    registers.set_flag(n, 0);
-    registers.set_flag(h, 0);
-    registers.set_flag(c, 1);
-    return registers.get_flag(c);
-}
-
-uint8_t Cpu::complement_accumulator() {
-    uint8_t flipped = ~registers.read_half(A);
-    registers.set_flag(n, 1);
-    registers.set_flag(h, 1);
-    registers.write_half(A, flipped);
-    return flipped;
-}
-
 bool Cpu::bit(int bit, BinOpt8 arg) {
     if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG.data());
     registers.set_flag(n, 0);
@@ -142,17 +120,17 @@ bool Cpu::bit(int bit, BinOpt8 arg) {
     registers.set_flag(h, 1);
     uint8_t unpacked = registers.unpack_binopt8(arg);
     bool test = (unpacked & (1 << bit)) == 0;
-    registers.set_flag(z, test);
+    if(test) registers.set_flag(z, true);
     return test;
 }
 
-uint8_t Cpu::res(int bit, BinOpt8 arg) {
+uint8_t Cpu::reset_bit(int bit, BinOpt8 arg) {
     if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG.data());
     uint8_t unpacked = registers.unpack_binopt8(arg);
     return (unpacked & ~(1 << bit));
 }
 
-uint8_t Cpu::set(int bit, BinOpt8 arg) {
+uint8_t Cpu::set_bit(int bit, BinOpt8 arg) {
     if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG.data());
     uint8_t unpacked = registers.unpack_binopt8(arg);
     return (unpacked & (1 << bit));
@@ -169,11 +147,11 @@ uint8_t Cpu::shift_left(BinOpt8 operand) {
     return res;
 }
 
-uint8_t Cpu::shift_right(BinOpt8 operand, bool preserveBit7) {
+uint8_t Cpu::shift_right(BinOpt8 operand, bool arith) {
     uint8_t unpacked = registers.unpack_binopt8(operand);
     uint8_t res = unpacked >> 1;
 
-    if(preserveBit7) res |= unpacked & 0x80;
+    if(arith) res |= unpacked & 0x80;
 
     registers.set_flag(z, res == 0);
     registers.set_flag(h, 0);
@@ -219,26 +197,5 @@ uint8_t Cpu::swap(BinOpt8 operand) {
     registers.set_flag(c, 0);
     // contents of original bit 0
     return (lsb_16(unpacked) << 4) | msb_16(unpacked);
-}
-
-uint16_t Cpu::push(Register16 arg){
-    uint16_t addr = registers.read(SP) - 2;
-    uint16_t val = registers.read(arg);
-    memory.write_word(addr, val);
-    return registers.write(SP, addr);
-}
-
-uint16_t Cpu::pop(Register16 dest){
-    uint16_t sp_value = registers.read(SP);
-    uint16_t word = memory.read_word(sp_value);
-    registers.write(dest, word);
-    return registers.write(SP, static_cast<uint16_t>(sp_value + 2));
-}
-
-void Cpu::call(uint16_t faddr, bool conditional) {
-    if(!conditional || registers.get_flag(z)) {
-        push(PC);
-        registers.write(PC, faddr);
-    }
 }
 
