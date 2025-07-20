@@ -266,10 +266,11 @@ void Cpu::cb_prefix() {
 
     switch(msb_8(opcode)) {
         case 0x0:
-        case 0x1:
+        case 0x1: {
             bool carry = msb_8(opcode) == 0;
             arg = lsb_8(opcode) <= 0x7 ? rotate_left(arg, carry) : rotate_right(arg, carry);
             break;
+        }
         case 0x2:
             //0x2 is for logical shifts (the false means not arith shift)
             arg = lsb_8(opcode) <= 0x7 ? shift_left(arg) : shift_right(arg, false);

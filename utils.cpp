@@ -59,7 +59,6 @@ uint16_t Cpu::get_e_or_f_prefixed_ld_addr(int opcode) {
             return fetch_and_inc() + 0xFF00;
         case(0x2):
             return registers.read_half(C) + 0xFF00;
-            break;
         case(0xA):
             return fetch_and_inc_imm_16();
         default:
@@ -73,7 +72,7 @@ void Cpu::write_to_dest8(RegisterOpt dest, uint8_t imm8) {
         if constexpr(std::is_same_v<Register8, dest_type>) registers.write_half(dest, imm8);
         else if constexpr(std::is_same_v<Register16, dest_type>) memory.write_byte(HL, imm8);
         else throw std::runtime_error("Invalid destination in ld_reg_or_memref_to_dest8");
-    }, get_dest8_from_bits(current_opcode));
+    }, dest);
 }
 
 // BIT OPERATIONS
@@ -95,12 +94,12 @@ int lsb_16(uint16_t val) {
 
 /// returns 4 least significant bits
 int lsb_8(uint8_t val) {
-    return val & 0xFF;
+    return val & 0xF;
 }
 
 
 bool get_bit(int target, int position) {
-    return (target >> position) % 2 == 1;
+    return (target >> position) & 1;
 }
 
 /// start and end are both inclusive
