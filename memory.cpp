@@ -41,19 +41,12 @@ uint16_t Memory::read_word_and_inc_sp() {
     return data;
 }
 
-/** reads from addr and addr + 1 constructing based on whether or not GB_CPU_BIG_ENDIAN is true or false */
 uint16_t Memory::read_word(BinOpt addr) {
     // TODO: validate implementation
     uint16_t unpacked_addr = unpack_addr(addr);
 
     uint16_t upper_byte = memory[unpacked_addr + 1];
     uint16_t lower_byte = memory[unpacked_addr];
-
-    if(GB_CPU_BIG_ENDIAN) {
-        uint16_t temp = upper_byte;
-        upper_byte = lower_byte;
-        lower_byte = temp;
-    }
 
     return (upper_byte << 8) | lower_byte;
 }
@@ -62,7 +55,7 @@ uint8_t Memory::read_byte(BinOpt addr) {
     uint16_t address = unpack_addr(addr);
     return memory[address];
 }
-/** writes lsb to addr + 1 and msb to addr if GB_CPU_BIG_ENDIAN is true, otherwise writes the other way */
+
 bool Memory::write_word(BinOpt addr, BinOpt16 val) {
     // TODO: validate implementation
     uint16_t unpacked_value = registers.unpack_binopt16(val);
@@ -70,12 +63,6 @@ bool Memory::write_word(BinOpt addr, BinOpt16 val) {
 
     uint8_t upper_bits = msb_16(unpacked_value);
     uint8_t lower_bits = lsb_16(unpacked_value);
-
-    if(GB_CPU_BIG_ENDIAN) {
-        uint8_t temp = upper_bits;
-        upper_bits = lower_bits;
-        lower_bits = temp;
-    }
 
     memory[unpacked_addr + 1] = upper_bits;
     memory[unpacked_addr] = lower_bits;

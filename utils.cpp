@@ -31,7 +31,6 @@ uint16_t Cpu::fetch_and_inc_imm_16() {
     uint8_t lsb = memory.read_byte(old_pc);
     uint8_t msb = memory.read_byte(static_cast<uint16_t>(old_pc + 1));
     registers.write(PC, static_cast<uint16_t>(old_pc + 2));
-    if(GB_CPU_BIG_ENDIAN) {std::swap(lsb, msb);}
     return combine_bytes(msb, lsb);
 }
 

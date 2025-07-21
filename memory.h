@@ -6,8 +6,6 @@
 constexpr int MEMORY_SIZE = 0xFFFF;
 constexpr int EIGHT_BIT_MEM_PREFIX = 0xFF00;
 constexpr bool BYTE_ADDRESSABLE = true;
-constexpr bool GB_CPU_LITTLE_ENDIAN = true;
-constexpr bool GB_CPU_BIG_ENDIAN = !GB_CPU_LITTLE_ENDIAN;
 
 class Memory
 {
