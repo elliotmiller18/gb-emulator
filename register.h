@@ -40,10 +40,9 @@ using BinOpt8 = std::variant<Register8, uint8_t>;
 using BinOpt = std::variant<BinOpt16, BinOpt8>;
 
 class Registers {
-private:
+public:
     std::array<uint16_t, NUM_REGISTERS> registers;
     bool IME = false;
-public:
     Registers();
     ~Registers();
     uint16_t unpack_binopt(BinOpt val);

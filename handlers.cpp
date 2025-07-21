@@ -63,7 +63,7 @@ void Cpu::ld_imm8_to_dest8() {
 
 void Cpu::rotate_left_handler() {
     // opcode is 0x000*0111 where bit 4 corresponds to whether or not carry is enabled (see func def)
-    registers.write_half(A, rotate_left(A, get_bit(current_opcode, 4) == 0));
+    registers.write_half(A, rotate_left(A, msb_8(current_opcode) == 0));
     // the non cb prefixed rotate left resets 0
     registers.set_flag(z, 0);
 }
@@ -100,7 +100,7 @@ void Cpu::ld_mem8_to_acc(){
 
 void Cpu::rotate_right_handler() {
     // opcode is 0x000*1111 where bit 4 corresponds to whether or not carry is enabled (see func def)
-    registers.write_half(A, rotate_right(A, get_bit(current_opcode, 4) == 0));
+    registers.write_half(A, rotate_right(A, msb_8(current_opcode) == 0));
     // the non cb prefixed rotate right resets 0
     registers.set_flag(z, 0);
 }
@@ -266,7 +266,6 @@ void Cpu::ld_sp_hl() {
 
 void Cpu::cb_prefix() {
     uint8_t opcode = fetch_and_inc();
-    if(debug) std::cout << std::hex << static_cast<int>(opcode);
     uint8_t arg = get_imm8_from_bits(opcode % 8);
 
     switch(msb_8(opcode)) {

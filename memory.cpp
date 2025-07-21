@@ -37,7 +37,7 @@ uint16_t Memory::unpack_addr(BinOpt addr) {
 
 uint16_t Memory::read_word_and_inc_sp() {
     uint16_t data = read_word(registers.read(SP));
-    registers.write(SP, static_cast<uint16_t>(registers.read(PC) - 2));
+    registers.write(SP, static_cast<uint16_t>(registers.read(SP) + 2));
     return data;
 }
 
@@ -45,14 +45,15 @@ uint16_t Memory::read_word(BinOpt addr) {
     // TODO: validate implementation
     uint16_t unpacked_addr = unpack_addr(addr);
 
-    uint16_t upper_byte = memory[unpacked_addr + 1];
-    uint16_t lower_byte = memory[unpacked_addr];
+    uint16_t lower_byte = read_byte(unpacked_addr);
+    uint16_t upper_byte = read_byte(++unpacked_addr);
 
     return (upper_byte << 8) | lower_byte;
 }
 
 uint8_t Memory::read_byte(BinOpt addr) {
     uint16_t address = unpack_addr(addr);
+    // std::cout << "\nReading byte " << std::hex << static_cast<int>(memory[address]) << " from addr " << std::hex << static_cast<int>(address) << "\n";
     return memory[address];
 }
 
@@ -64,8 +65,8 @@ bool Memory::write_word(BinOpt addr, BinOpt16 val) {
     uint8_t upper_bits = msb_16(unpacked_value);
     uint8_t lower_bits = lsb_16(unpacked_value);
 
-    memory[unpacked_addr + 1] = upper_bits;
-    memory[unpacked_addr] = lower_bits;
+    write_byte(unpacked_addr, lower_bits);
+    write_byte(++unpacked_addr, upper_bits);
     return true;
 }
 
@@ -78,6 +79,7 @@ void Memory::write_word_and_dec_sp(BinOpt16 val) {
 bool Memory::write_byte(BinOpt addr, BinOpt8 val) {
     uint8_t unpacked_value = registers.unpack_binopt8(val);
     uint16_t unpacked_addr = unpack_addr(addr);
+    // std::cout << "Writing byte " << std::hex << static_cast<int>(unpacked_value) << " to addr " << std::hex << static_cast<int>(unpacked_addr) << "\n";
     memory[unpacked_addr] = unpacked_value;
     return true;
 }

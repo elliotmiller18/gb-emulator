@@ -9,10 +9,9 @@ constexpr bool BYTE_ADDRESSABLE = true;
 
 class Memory
 {
-private:
+public:
     std::array<uint8_t, MEMORY_SIZE> memory;
     Registers& registers;
-public:
     Memory(Registers& registers, const char* filename);
     Memory(Registers& registers) : registers(registers) {}
     ~Memory();

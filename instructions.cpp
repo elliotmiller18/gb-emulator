@@ -71,7 +71,6 @@ uint16_t Cpu::add16(Register16 dest, Register16 operand) {
     return static_cast<uint16_t>(res);
 }
 
-//TODO: refactor this
 uint16_t Cpu::add_sp_signed(int8_t operand){
     registers.set_flag(n, 0);
     registers.set_flag(z, 0);
@@ -80,7 +79,8 @@ uint16_t Cpu::add_sp_signed(int8_t operand){
     int res = unpacked + operand;
     // set flags like an add8 with subtraction set as whether or not the operand is less than 0, carry=false, 
     // and the optional dest arg as the SP (the function will cast away the upper byte)
-    // add8(static_cast<uint8_t>(operand), operand < 0, false, SP);
+    //TODO: check this flagsetting behavior
+    add8(static_cast<uint8_t>(operand), operand < 0, false, SP);
     return res;
 }
 
@@ -92,7 +92,7 @@ uint16_t Cpu::add_sp_signed(int8_t operand){
 uint8_t Cpu::decimal_adjust_acc() {
     uint8_t adjustment = 0;
     uint8_t reg_a = registers.read_half(A);
-    uint8_t res = 0;
+    uint8_t res = reg_a;
     bool c_flag = false;
     if(registers.get_flag(n)) {
         if(registers.get_flag(h)) adjustment += DECIMAL_ADJUST_LOW;
@@ -165,13 +165,13 @@ uint8_t Cpu::rotate_left(BinOpt8 operand, bool carry) {
     uint8_t unpacked = registers.unpack_binopt8(operand);
     uint8_t res = unpacked << 1;
     if(carry) res |= unpacked >> 7;
-    else res |= static_cast<int>(carry);
+    else res |= static_cast<int>(registers.get_flag(c));
 
     registers.set_flag(z, res == 0);
     registers.set_flag(h, 0);
     registers.set_flag(n, 0);
     // contents of original bit 0
-    registers.set_flag(c, unpacked & 7);
+    registers.set_flag(c, get_bit(unpacked, 7));
     return res;
 }
 
@@ -179,7 +179,7 @@ uint8_t Cpu::rotate_right(BinOpt8 operand, bool carry) {
     uint8_t unpacked = registers.unpack_binopt8(operand);
     uint8_t res = unpacked >> 1;
     if(carry) res |= (unpacked & 1) << 7 ;
-    else res |= static_cast<int>(carry) << 7;
+    else res |= static_cast<int>(registers.get_flag(c)) << 7;
 
     registers.set_flag(z, res == 0);
     registers.set_flag(h, 0);

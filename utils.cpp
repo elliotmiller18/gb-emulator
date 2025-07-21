@@ -50,6 +50,11 @@ void Cpu::print_state() {
     for(size_t r = 0; r < NUM_REGISTERS; r++) {
         std::cout << "REGISTER " << r16_name(r) << ": 0x" << std::hex << registers.read(static_cast<Register16>(r)) << "\n";
     }
+    std::cout << "MEM AFTER PC ";
+    for(size_t m = registers.read(PC); m < registers.registers[PC] + 4; m++) {
+        std::cout << std::hex << static_cast<int>(memory.memory[m]) << " ";
+    }
+    std::cout << "\n";
 }
 
 uint16_t Cpu::get_e_or_f_prefixed_ld_addr(int opcode) {
