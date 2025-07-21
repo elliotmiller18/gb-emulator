@@ -119,7 +119,7 @@ void Registers::set_flag(Flag flag, bool value) {
         default:
             throw std::invalid_argument("Invalid flag"); 
     }
-    registers[AF] = (registers[AF] & ~(bit << shift)) | (bit << shift);
+    registers[AF] = (registers[AF] & ~(1 << shift)) | (bit << shift);
 }
 
 bool Registers::get_flag(Flag flag) {

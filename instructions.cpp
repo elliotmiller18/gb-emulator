@@ -115,12 +115,12 @@ uint8_t Cpu::decimal_adjust_acc() {
 
 bool Cpu::bit(int bit, BinOpt8 arg) {
     if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG.data());
-    registers.set_flag(n, 0);
     // for some reason ..?
-    registers.set_flag(h, 1);
     uint8_t unpacked = registers.unpack_binopt8(arg);
-    bool test = (unpacked & (1 << bit)) == 0;
-    if(test) registers.set_flag(z, true);
+    bool test = get_bit(unpacked, bit);
+    registers.set_flag(z, !test);
+    registers.set_flag(n, 0);
+    registers.set_flag(h, 1);
     return test;
 }
 

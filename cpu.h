@@ -16,8 +16,9 @@ public:
     Registers registers;
     Memory memory;
     int current_opcode;
+    bool debug;
 
-    Cpu(const char* filename) : registers(Registers()), memory(registers, filename) {}
+    Cpu(const char* filename) : registers(Registers()), memory(registers, filename), debug(false) {}
     Cpu() : registers(Registers()), memory(registers) {}
     ~Cpu() {}
 
@@ -39,6 +40,7 @@ public:
     void write_to_dest8(RegisterOpt dest, uint8_t imm8);
 
 // REGULAR INSTRUCTION HANDLERS
+    void invalid_opcode();
     void noop();
     void ld_imm16_to_reg16();
     void ld_acc_to_memory();
@@ -58,7 +60,7 @@ public:
     void complement_carry_flag();
     void ld_reg_or_memref_to_dest8();
     //TODO: implement when we do interrupts
-    void halt();
+    void halt() {invalid_opcode();}
     void add8_handler();
     void logical_op8_handler();
     void cp_handler();
@@ -69,21 +71,20 @@ public:
     void call();
     void push();
     //TODO: implement later
-    void rst();
+    void rst() {invalid_opcode();}
 
     //TODO: implement when we do interrupts
-    void reti();
-    //TODO: implement when we implement prefixed instructions
+    void reti() {invalid_opcode();}
     void cb_prefix();
-    void e_prefixed_ld();
+    void e_prefixed_ldh();
     void add_sp_e8_handler();
-    void f_prefixed_ld();
+    void f_prefixed_ldh();
     //TODO: implement when we do interrupts
-    void di();  
+    void di() {invalid_opcode();}
     void add_sp_e8_to_hl();
     void ld_sp_hl();
     //TODO: implement when we do interrupts
-    void ei();
+    void ei() {invalid_opcode();}
 
 
 /// OLD INSTRUCTIONS, mostly just used for reference

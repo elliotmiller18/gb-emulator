@@ -7,6 +7,10 @@
 
 //TODO: double check if we can batch cycle like we do in ld_reg_16 or we need to cycle after each operation
 
+void Cpu::invalid_opcode() {
+    throw std::runtime_error("Invalid opcode called");
+}
+
 void Cpu::noop() {}
 
 void Cpu::ld_imm16_to_reg16() {
@@ -240,7 +244,7 @@ void Cpu::push() {
     memory.write_word_and_dec_sp(arg);
 }
 
-void Cpu::e_prefixed_ld() {
+void Cpu::e_prefixed_ldh() {
     memory.write_byte(get_e_or_f_prefixed_ld_addr(current_opcode), A);
 }
 
@@ -248,7 +252,7 @@ void Cpu::add_sp_e8_handler() {
     registers.write(SP, add_sp_signed(static_cast<int8_t>(fetch_and_inc())));
 }
 
-void Cpu::f_prefixed_ld() {
+void Cpu::f_prefixed_ldh() {
     registers.write_half(A, memory.read_byte(get_e_or_f_prefixed_ld_addr(current_opcode)));
 }
 
@@ -262,6 +266,7 @@ void Cpu::ld_sp_hl() {
 
 void Cpu::cb_prefix() {
     uint8_t opcode = fetch_and_inc();
+    if(debug) std::cout << std::hex << static_cast<int>(opcode);
     uint8_t arg = get_imm8_from_bits(opcode % 8);
 
     switch(msb_8(opcode)) {
