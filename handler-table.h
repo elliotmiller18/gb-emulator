@@ -1,3 +1,4 @@
+#pragma once
 #include "cpu.h"
 
 using opcode_handler = void (Cpu::*)();

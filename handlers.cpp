@@ -125,7 +125,6 @@ void Cpu::jr() {
             condition = registers.get_flag(c);
             break;
         default:
-            // unconditional jump
             throw std::runtime_error("Invalid opcode in JR");
             break;
     }
@@ -199,7 +198,7 @@ void Cpu::ret() {
     if((current_opcode & 0b111) == 0){
         condition = msb_8(current_opcode) == 0xC ? registers.get_flag(z) : registers.get_flag(c);
         // ret cc or ret not cc
-        condition = lsb_8(current_opcode) == 0x8 ? condition : !condition;
+        if(lsb_8(current_opcode) == 0) condition = !condition;
     }
     if(!condition) return;
     registers.write(PC, memory.read_word_and_inc_sp());
