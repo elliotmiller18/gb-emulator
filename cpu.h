@@ -14,7 +14,7 @@ public:
     Memory memory;
     int current_opcode;
     bool debug;
-    bool stop_mode;
+    bool stop_mode = false;
 
     Cpu(const char* filename) : registers(Registers()), memory(registers, filename), debug(false) {}
     Cpu() : registers(Registers()), memory(registers) {}

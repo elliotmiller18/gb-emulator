@@ -11,8 +11,8 @@ constexpr int DIV_INC_RATE = 16384;
 constexpr int CYCLES_TO_INC_DIV = SYSTEM_CLOCK_SPEED / DIV_INC_RATE;
 
 int Cpu::step() {
-    if(debug) std::cout << "\nexecuting instruction with opcode: " << std::hex << current_opcode << "\n";
     current_opcode = fetch_and_inc();
+    if(debug) std::cout << "\nexecuting instruction with opcode: " << std::hex << current_opcode << "\n";
     //TODO: make this a function that returns the number of mycles rather than being a void func
     return (this->*opcode_table[current_opcode])();
 }
@@ -25,15 +25,14 @@ void Cpu::run() {
     // note: In this function we %= under the assumption that mcycles (the result of step) will 
     // never exceed 64 (or 256 but not exceeding 64 obviously implies it won't exceed 256)
     // which we can assume as step is only the result of one instruction which I believe is at most 5 machine cycles
-    while(true) {
+    for(int i = 0; i < 1000000; i++) {
         int mcycles = step();
         //TODO: add halt handling
-
         div_cycles += mcycles;
         if(div_cycles >= CYCLES_TO_INC_DIV) {
             div_cycles %= CYCLES_TO_INC_DIV;
             //we don't increment DIV in stop mode but the CPU does keep cycling
-            if(!stop_mode) memory.adjust(DIV_ADDR, 1);
+            if(!stop_mode) memory.tick_divider();
         }
 
         uint8_t timer_control = memory.read_byte(TIMER_CONTROL_ADDR);
@@ -49,17 +48,18 @@ void Cpu::run() {
                 case 0b11: cycles_to_inc_timer = 64; break;
                 default: throw std::runtime_error("get_bits_in_range returned an impossible value");
             }
-            if(timer_cycles >= cycles_to_inc_timer) {
+            while(timer_cycles >= cycles_to_inc_timer) {
                 //TODO: use result of this to do interrupt
                 memory.tick_timer();
                 // max possible cycles_to_inc_timer
-                timer_cycles %= 256;
+                timer_cycles -= cycles_to_inc_timer;
             }
         }
 
-        //TODO:: interrupts here
+        //TODO: interrupts here
         if(debug) {
-            std::cout << "divider: " << std::hex << memory.read_byte(DIV_ADDR) << "\n";
+            if(stop_mode) std::cout << "stopped\n";
+            else std::cout << "divider: " << static_cast<int>(memory.read_byte(DIV_ADDR)) << "\n";
             print_state();
         }
 

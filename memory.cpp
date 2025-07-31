@@ -84,8 +84,8 @@ void Memory::write_byte(BinOpt addr, BinOpt8 val) {
     memory[unpacked_addr] = unpacked_value;
 }
 
-void Memory::adjust(uint16_t addr, uint8_t adjustment) {
-    write_byte(addr, static_cast<uint8_t>(read_byte(addr) + adjustment));
+void Memory::tick_divider() {
+    ++memory[DIV_ADDR];
 }
 
 bool Memory::tick_timer() {
