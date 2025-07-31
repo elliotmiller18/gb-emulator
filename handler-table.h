@@ -252,7 +252,7 @@ static constexpr opcode_handler opcode_table[NUM_1_BYTE_OPCODES] = {
 /*f5, */            &Cpu::push,
 /*f6, */            &Cpu::logical_op8_handler,
 /*f7, */            &Cpu::rst,
-/*f8, */            &Cpu::add_sp_e8_handler,
+/*f8, */            &Cpu::ld_add_sp_e8_to_hl,
 /*f9, */            &Cpu::ld_sp_hl,
 /*fa, */            &Cpu::f_prefixed_ldh,
 /*fb, */            &Cpu::ei,
