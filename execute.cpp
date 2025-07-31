@@ -26,6 +26,7 @@ void Cpu::run() {
     // which we can assume as step is only the result of one instruction which I believe is at most 5 machine cycles
     while(true) {
         int mcycles = step();
+        //TODO: add halt handling
 
         div_cycles += mcycles;
         if(div_cycles >= CYCLES_TO_INC_DIV) {
@@ -47,7 +48,15 @@ void Cpu::run() {
                 case 0b11: cycles_to_inc_timer = 64; break;
                 default: throw std::runtime_error("get_bits_in_range returned an impossible value");
             }
+            if(timer_cycles >= cycles_to_inc_timer) {
+                bool interrupt = memory.tick_timer();
+                if(interrupt) {//TODO: interrupt}
+                // max possible cycles_to_inc_timer
+                timer_cycles %= 256;
+            }
         }
+
+        //TODO:: interrupts here
 
         throttle_to_time(mcycles);
     }

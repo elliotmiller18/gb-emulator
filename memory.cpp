@@ -80,13 +80,19 @@ void Memory::write_byte(BinOpt addr, BinOpt8 val) {
     uint16_t unpacked_addr = unpack_addr(addr);
     // writing to div resets it
     if(unpacked_addr == DIV_ADDR) unpacked_value = 0;
-    //overflowing the timer register sets it to the timer modulo
-    else if(unpacked_addr == TIMER_COUNTER_ADDR && (read_byte(TIMER_COUNTER_ADDR) + unpacked_value) > 0xFF) 
-        unpacked_value = read_byte(TIMER_MODULO_ADDR);
 
     memory[unpacked_addr] = unpacked_value;
 }
 
 void Memory::adjust(uint16_t addr, uint8_t adjustment) {
     write_byte(addr, static_cast<uint8_t>(read_byte(addr) + adjustment));
+}
+
+bool Memory::tick_timer() {
+    if(memory[TIMER_COUNTER_ADDR] == 0xFF) {
+        memory[TIMER_COUNTER_ADDR] = memory[TIMER_MODULO_ADDR];
+        return true;
+    }
+    ++memory[TIMER_COUNTER_ADDR];
+    return false;
 }

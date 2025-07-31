@@ -23,4 +23,5 @@ public:
     void write_word(BinOpt addr, BinOpt16 val);
     void write_byte(BinOpt addr, BinOpt8 byte);
     void adjust(uint16_t addr, uint8_t adjustment);
+    bool tick_timer();
 };
