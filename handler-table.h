@@ -1,7 +1,7 @@
 #pragma once
 #include "cpu.h"
 
-using opcode_handler = void (Cpu::*)();
+using opcode_handler = int (Cpu::*)();
 
 static constexpr opcode_handler opcode_table[NUM_1_BYTE_OPCODES] = {
 /*00, NOP*/         &Cpu::noop,

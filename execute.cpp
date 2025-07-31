@@ -1,7 +1,7 @@
 #include "cpu.h"
 #include "utils.h"
-#include <handler-table.h>
-#include <cycle-table.h>
+#include "handler-table.h"
+#include <iostream>
 
 /// rate (hz) at which the div register is incremented, this is also 1 << 14 or 2^14
 constexpr int MASTER_CLOCK_SPEED = 4'194'304;
@@ -11,9 +11,10 @@ constexpr int DIV_INC_RATE = 16384;
 constexpr int CYCLES_TO_INC_DIV = SYSTEM_CLOCK_SPEED / DIV_INC_RATE;
 
 int Cpu::step() {
+    if(debug) std::cout << "\nexecuting instruction with opcode: " << std::hex << current_opcode << "\n";
     current_opcode = fetch_and_inc();
-    (this->*opcode_table[current_opcode])();
-    return cycle_table[current_opcode];
+    //TODO: make this a function that returns the number of mycles rather than being a void func
+    return (this->*opcode_table[current_opcode])();
 }
 
 void Cpu::run() {
@@ -57,6 +58,10 @@ void Cpu::run() {
         }
 
         //TODO:: interrupts here
+        if(debug) {
+            std::cout << "divider: " << std::hex << memory.read_byte(DIV_ADDR) << "\n";
+            print_state();
+        }
 
         throttle_to_time(mcycles);
     }

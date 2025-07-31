@@ -41,51 +41,51 @@ public:
     int step();
 
 // REGULAR INSTRUCTION HANDLERS
-    void invalid_opcode();
-    void noop();
-    void ld_imm16_to_reg16();
-    void ld_acc_to_memory();
-    void step16_handler();
-    void step8_handler();
-    void ld_imm8_to_dest8();
-    void rotate_left_handler();
-    void ld_sp_to_mem();
-    void add_hl_handler();
-    void ld_mem8_to_acc();
-    void rotate_right_handler();
-    void stop();
-    void jr();
-    void daa_handler();
-    void complement_acc();
-    void set_carry_flag();
-    void complement_carry_flag();
-    void ld_reg_or_memref_to_dest8();
+    int invalid_opcode();
+    int noop();
+    int ld_imm16_to_reg16();
+    int ld_acc_to_memory();
+    int step16_handler();
+    int step8_handler();
+    int ld_imm8_to_dest8();
+    int rotate_left_handler();
+    int ld_sp_to_mem();
+    int add_hl_handler();
+    int ld_mem8_to_acc();
+    int rotate_right_handler();
+    int stop();
+    int jr();
+    int daa_handler();
+    int complement_acc();
+    int set_carry_flag();
+    int complement_carry_flag();
+    int ld_reg_or_memref_to_dest8();
     //TODO: implement when we do interrupts
-    void halt() {invalid_opcode();}
-    void add8_handler();
-    void logical_op8_handler();
-    void cp_handler();
+    int halt() {invalid_opcode();}
+    int add8_handler();
+    int logical_op8_handler();
+    int cp_handler();
     //TODO: verify after research
-    void ret();
-    void pop();
-    void jp();
-    void call();
-    void push();
+    int ret();
+    int pop();
+    int jp();
+    int call();
+    int push();
     //TODO: implement later
-    void rst() {invalid_opcode();}
+    int rst() {invalid_opcode();}
 
     //TODO: implement when we do interrupts
-    void reti() {invalid_opcode();}
-    void cb_prefix();
-    void e_prefixed_ldh();
-    void add_sp_e8_handler();
-    void f_prefixed_ldh();
+    int reti() {invalid_opcode();}
+    int cb_prefix();
+    int e_prefixed_ldh();
+    int add_sp_e8_handler();
+    int f_prefixed_ldh();
     //TODO: implement when we do interrupts
-    void di() {invalid_opcode();}
-    void add_sp_e8_to_hl();
-    void ld_sp_hl();
+    int di() {invalid_opcode();}
+    int add_sp_e8_to_hl();
+    int ld_sp_hl();
     //TODO: implement when we do interrupts
-    void ei() {invalid_opcode();}
+    int ei() {invalid_opcode();}
 
 
 /// OLD INSTRUCTIONS, mostly just used for reference
