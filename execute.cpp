@@ -49,8 +49,8 @@ void Cpu::run() {
                 default: throw std::runtime_error("get_bits_in_range returned an impossible value");
             }
             if(timer_cycles >= cycles_to_inc_timer) {
-                bool interrupt = memory.tick_timer();
-                if(interrupt) {//TODO: interrupt}
+                //TODO: use result of this to do interrupt
+                memory.tick_timer();
                 // max possible cycles_to_inc_timer
                 timer_cycles %= 256;
             }
@@ -60,4 +60,8 @@ void Cpu::run() {
 
         throttle_to_time(mcycles);
     }
+}
+
+void Cpu::throttle_to_time(int mycyles) {
+    //I do nothing!
 }
