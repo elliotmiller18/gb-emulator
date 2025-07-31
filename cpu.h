@@ -82,7 +82,7 @@ public:
     int f_prefixed_ldh();
     //TODO: implement when we do interrupts
     int di() {invalid_opcode();}
-    int add_sp_e8_to_hl();
+    int ld_add_sp_e8_to_hl();
     int ld_sp_hl();
     //TODO: implement when we do interrupts
     int ei() {invalid_opcode();}

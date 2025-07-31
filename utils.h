@@ -24,6 +24,8 @@ int lsb_16(uint16_t arg);
 int msb_8(uint8_t arg);
 int lsb_8(uint8_t arg);
 int get_bits_in_range(unsigned int target, unsigned int start, unsigned int end);
+int arith8_mcycles(int opcode);
+int prefixed_ldh_mcycles(int opcode);
 uint16_t combine_bytes(uint8_t msb, uint8_t lsb);
 Register16 get_register16_from_opcode(int bits);
 bool get_bit(int target, int position);

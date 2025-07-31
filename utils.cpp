@@ -136,3 +136,15 @@ Register16 get_register16_from_opcode(int opcode) {
     if(dest == AF || dest == PC) throw std::invalid_argument("Must be within the range 0b00 (BC) - 0b11 (SP)");
     return dest;
 }
+
+int arith8_mcycles(int opcode) {
+    return (opcode & 0b111) == 0b110 ? 2 : 1;
+}
+
+int prefixed_ldh_mcycles(int opcode) {
+    switch(lsb_8(opcode)) {
+        case 0x0: return 3;
+        case 0x2: return 2;
+        case 0xA: return 4;
+    }
+}

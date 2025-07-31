@@ -99,11 +99,11 @@ int Cpu::ld_mem8_to_acc(){
             break;
         case 2:
             registers.write_half(A, memory.read_byte(HL));
-            registers.write(HL, static_cast<uint16_t>(registers.read(HL) - 1));
+            registers.write(HL, static_cast<uint16_t>(registers.read(HL) + 1));
             break;
         case 3:
             registers.write_half(A, memory.read_byte(HL));
-            registers.write(HL, static_cast<uint16_t>(registers.read(HL) + 1));
+            registers.write(HL, static_cast<uint16_t>(registers.read(HL) - 1));
             break;
     } 
     return 2;
@@ -198,10 +198,9 @@ int Cpu::add8_handler() {
     bool subtraction = get_bit(current_opcode, 4);
     registers.write_half(A, add8(A, arg, subtraction, carry));
     // mem read or imm8 (have to read next byte) both have last 3 bits 0b110
-    return (current_opcode & 0b111) == 0b110 ? 2 : 1;
+    return arith8_mcycles(current_opcode);
 }
 
-//TODO: pick up here
 int Cpu::logical_op8_handler() {
     // all xor instructions are and instructions with bit 3 set, and all ors are and instructions with 1 added to the msb
     // this is a bit confusing to follow but if you see the table it'll make sense
@@ -211,24 +210,33 @@ int Cpu::logical_op8_handler() {
     else if(lsb_8(current_opcode) > 7) op = XOR;
 
     uint8_t arg = msb_8(current_opcode) > 0xB ? fetch_and_inc() : get_imm8_from_bits(current_opcode % 8);
-
     registers.write_half(A, logical_operation8(arg, op));
+
+    return arith8_mcycles(current_opcode);
 }
 
 int Cpu::cp_handler() {
     uint8_t arg = current_opcode == 0xFE ? fetch_and_inc() :  get_imm8_from_bits(current_opcode % 8);
     add8(A, arg, true);
+    return arith8_mcycles(current_opcode);
 }
 
 int Cpu::ret() {
+    // ret and reti are 4, retcc (if taken) are 5
+    int mcycles = 4;
     bool condition = true;
+
     if((current_opcode & 0b111) == 0){
+        // this whole process takes an extra mcycle
+        ++mcycles;
         condition = msb_8(current_opcode) == 0xC ? registers.get_flag(z) : registers.get_flag(c);
         // ret cc or ret not cc
         if(lsb_8(current_opcode) == 0) condition = !condition;
     }
-    if(!condition) return;
+
+    if(!condition) return 2;
     registers.write(PC, memory.read_word_and_inc_sp());
+    return mcycles;
 }
 
 int Cpu::pop() {
@@ -236,6 +244,7 @@ int Cpu::pop() {
     // in this instruction 11 means AF not SP
     if(dest == SP) dest = AF;
     registers.write(dest, memory.read_word_and_inc_sp());
+    return 3;
 }
 
 int Cpu::jp() {
@@ -246,21 +255,31 @@ int Cpu::jp() {
     else throw std::runtime_error("Invalid opcode in jp");
     if(lsb_8(current_opcode) == 0x2) condition = !condition;
 
+    bool hl_jump = current_opcode == 0xE9;
+    uint16_t addr = hl_jump ? registers.read(HL) : fetch_and_inc_imm_16();
     //jp imm16 or jp HL are the two options
-    if(condition) registers.write(PC, current_opcode == 0xE9 ? registers.read(HL) : fetch_and_inc_imm_16());
+    if(condition) registers.write(PC, addr);
+    // not taken is 3 mcycles
+    else return 3;
+
+    return hl_jump ? 1 : 4;
 }
 
 int Cpu::call() {
     bool condition = true;
+    uint16_t addr = fetch_and_inc_imm_16();
+
     if((current_opcode & 0b11) == 0) {
         condition = msb_8(current_opcode) == 0xC ? registers.get_flag(z) : registers.get_flag(c);
         // call cc or call not cc
-        condition = lsb_8(current_opcode) == 0x4 ? condition : !condition;
+        if(lsb_8(current_opcode) == 0x4) condition = !condition;
     }
-    if(!condition) return;
-    uint16_t addr = fetch_and_inc_imm_16();
+
+    if(!condition) return 3;
+
     memory.write_word_and_dec_sp(PC);
     registers.write(PC, addr);
+    return 6;
 }
 
 int Cpu::push() {
@@ -268,31 +287,40 @@ int Cpu::push() {
     // in this instruction 11 means AF not SP
     if(arg == SP) arg = AF;
     memory.write_word_and_dec_sp(arg);
+    return 4;
 }
 
 int Cpu::e_prefixed_ldh() {
     memory.write_byte(get_e_or_f_prefixed_ld_addr(current_opcode), A);
+    // this is the dirtiest but cleanest way to do it
+    return prefixed_ldh_mcycles(current_opcode);
 }
 
 int Cpu::add_sp_e8_handler() {
     registers.write(SP, add_sp_signed(static_cast<int8_t>(fetch_and_inc())));
+    return 4;
 }
 
 int Cpu::f_prefixed_ldh() {
     registers.write_half(A, memory.read_byte(get_e_or_f_prefixed_ld_addr(current_opcode)));
+    return prefixed_ldh_mcycles(current_opcode);
 }
 
-int Cpu::add_sp_e8_to_hl() {
+int Cpu::ld_add_sp_e8_to_hl() {
     registers.write(HL, add_sp_signed(static_cast<int8_t>(fetch_and_inc())));
+    return 3;
 }
 
 int Cpu::ld_sp_hl() {
     registers.write(SP, HL);
+    return 2;
 }
 
 int Cpu::cb_prefix() {
     uint8_t opcode = fetch_and_inc();
     uint8_t arg = get_imm8_from_bits(opcode % 8);
+
+    int mcycles = 2;
 
     switch(msb_8(opcode)) {
         case 0x0:
@@ -312,9 +340,12 @@ int Cpu::cb_prefix() {
         case 0x4:
         case 0x5:
         case 0x6:
+            bit(get_bits_in_range(opcode, 3, 5), arg);
+            return 2;
         case 0x7:
             bit(get_bits_in_range(opcode, 3, 5), arg);
-            return;
+            // this is a memref
+            return 3;
         case 0x8:
         case 0x9:
         case 0xA:
@@ -331,10 +362,16 @@ int Cpu::cb_prefix() {
             throw std::runtime_error("msb_8 returned something unexpected");
     }
 
-    std::visit([arg, this](auto&& dest) mutable {
+    std::visit([mcycles, arg, this](auto&& dest) mutable {
         using arg_type = std::decay_t<decltype(dest)>;
         if constexpr(std::is_same_v<arg_type, Register8>) registers.write_half(dest, arg);
-        else if constexpr(std::is_same_v<arg_type, Register16>) memory.write_byte(HL, arg);
+        else if constexpr(std::is_same_v<arg_type, Register16>) {
+            memory.write_byte(HL, arg);
+            // bit on [HL] takes 3 cycles, all other instructions memreffing instr take 4 cycles
+            mcycles = 4;
+        }
         else throw std::runtime_error("Invalid destination in cb_prefix");
     }, get_dest8_from_bits(opcode % 8));
+
+    return mcycles;
 }
