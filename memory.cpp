@@ -1,6 +1,7 @@
 #include "memory.h"
 #include "register.h"
 #include "utils.h"
+#include "cpu.h"
 #include <iostream>
 #include <fstream>
 #include <variant>
@@ -53,11 +54,10 @@ uint16_t Memory::read_word(BinOpt addr) {
 
 uint8_t Memory::read_byte(BinOpt addr) {
     uint16_t address = unpack_addr(addr);
-    // std::cout << "\nReading byte " << std::hex << static_cast<int>(memory[address]) << " from addr " << std::hex << static_cast<int>(address) << "\n";
     return memory[address];
 }
 
-bool Memory::write_word(BinOpt addr, BinOpt16 val) {
+void Memory::write_word(BinOpt addr, BinOpt16 val) {
     // TODO: validate implementation
     uint16_t unpacked_value = registers.unpack_binopt16(val);
     uint16_t unpacked_addr = unpack_addr(addr);
@@ -67,7 +67,6 @@ bool Memory::write_word(BinOpt addr, BinOpt16 val) {
 
     write_byte(unpacked_addr, lower_bits);
     write_byte(++unpacked_addr, upper_bits);
-    return true;
 }
 
 /// decrements, then writes
@@ -76,10 +75,18 @@ void Memory::write_word_and_dec_sp(BinOpt16 val) {
     write_word(registers.read(SP), val);
 }
 
-bool Memory::write_byte(BinOpt addr, BinOpt8 val) {
+void Memory::write_byte(BinOpt addr, BinOpt8 val) {
     uint8_t unpacked_value = registers.unpack_binopt8(val);
     uint16_t unpacked_addr = unpack_addr(addr);
-    // std::cout << "Writing byte " << std::hex << static_cast<int>(unpacked_value) << " to addr " << std::hex << static_cast<int>(unpacked_addr) << "\n";
+    // writing to div resets it
+    if(unpacked_addr == DIV_ADDR) unpacked_value = 0;
+    //overflowing the timer register sets it to the timer modulo
+    else if(unpacked_addr == TIMER_COUNTER_ADDR && (read_byte(TIMER_COUNTER_ADDR) + unpacked_value) > 0xFF) 
+        unpacked_value = read_byte(TIMER_MODULO_ADDR);
+
     memory[unpacked_addr] = unpacked_value;
-    return true;
+}
+
+void Memory::adjust(uint16_t addr, uint8_t adjustment) {
+    write_byte(addr, static_cast<uint8_t>(read_byte(addr) + adjustment));
 }

@@ -2,15 +2,22 @@
 #include "register.h"
 #include <cstdint>
 
-/// keeps the upper 8 bits
-constexpr int UPPER_HALF_MASK = 0xFF00;
-/// keeps the lower 8 bits
-constexpr int LOWER_HALF_MASK = 0x00FF;
+//shared constants
 
-constexpr int VERTICAL_VAL8_START = 3;
-constexpr int VERTICAL_VAL8_END = 5;
-constexpr int HORIZONTAL_DEST8_START_BIT = 4;
-constexpr int HORIZONTAL_DEST8_END_BIT = 5;
+/// keeps the upper 8 bits
+inline constexpr int UPPER_HALF_MASK = 0xFF00;
+/// keeps the lower 8 bits
+inline constexpr int LOWER_HALF_MASK = 0x00FF;
+
+inline constexpr int VERTICAL_VAL8_START = 3;
+inline constexpr int VERTICAL_VAL8_END = 5;
+inline constexpr int HORIZONTAL_DEST8_START_BIT = 4;
+inline constexpr int HORIZONTAL_DEST8_END_BIT = 5;
+
+inline constexpr uint16_t DIV_ADDR = 0xFF04;
+inline constexpr uint16_t TIMER_COUNTER_ADDR = 0xFF05;
+inline constexpr uint16_t TIMER_MODULO_ADDR = 0xFF06;
+inline constexpr uint16_t TIMER_CONTROL_ADDR = 0xFF07;
 
 int msb_16(uint16_t arg);
 int lsb_16(uint16_t arg);

@@ -6,10 +6,7 @@
 #include <variant>
 #include <stdexcept>
 
-/// the value that programs expect the SP to be initialized to
-constexpr uint16_t STACK_STARTING_VALUE = 0xFFFE;
-/// the pointer to the top of VRAM
-constexpr uint16_t VRAM_TOP = 0x9FFF;
+inline constexpr int NUM_1_BYTE_OPCODES = 256;
 
 class Cpu {
 public:
@@ -17,6 +14,7 @@ public:
     Memory memory;
     int current_opcode;
     bool debug;
+    bool stop_mode;
 
     Cpu(const char* filename) : registers(Registers()), memory(registers, filename), debug(false) {}
     Cpu() : registers(Registers()), memory(registers) {}
@@ -38,6 +36,9 @@ public:
     uint8_t get_imm8_from_bits(int bits);
     uint16_t get_e_or_f_prefixed_ld_addr(int opcode);
     void write_to_dest8(RegisterOpt dest, uint8_t imm8);
+    void throttle_to_time(int machine_cycles);
+    void run();
+    int step();
 
 // REGULAR INSTRUCTION HANDLERS
     void invalid_opcode();

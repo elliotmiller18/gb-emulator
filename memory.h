@@ -20,6 +20,7 @@ public:
     uint16_t read_word_and_inc_sp();
     uint8_t read_byte(BinOpt addr);
     void write_word_and_dec_sp(BinOpt16 val);
-    bool write_word(BinOpt addr, BinOpt16 val);
-    bool write_byte(BinOpt addr, BinOpt8 byte);
+    void write_word(BinOpt addr, BinOpt16 val);
+    void write_byte(BinOpt addr, BinOpt8 byte);
+    void adjust(uint16_t addr, uint8_t adjustment);
 };

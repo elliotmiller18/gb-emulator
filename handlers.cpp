@@ -107,6 +107,9 @@ void Cpu::rotate_right_handler() {
 
 void Cpu::stop() {
     registers.disable_interrupts();
+    stop_mode = true;
+    // stop resets the divider
+    memory.write_byte(DIV_ADDR, static_cast<uint8_t>(0));
     //there's junk data after
     fetch_and_inc();
 }
