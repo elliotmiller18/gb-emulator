@@ -20,9 +20,12 @@ uint16_t Registers::unpack_binopt(BinOpt val) {
 }
 
 uint16_t Registers::unpack_binopt16(BinOpt16 val) {
-    if(Register16* reg = std::get_if<Register16>(&val))  return read(*reg); 
-    else if(uint16_t* imm = std::get_if<uint16_t>(&val)) return *imm;
-    else throw std::invalid_argument("Invalid BinOpt16 type");
+    return std::visit([this](auto&& inner) -> uint16_t {
+        using T = decltype(inner);
+        if constexpr (std::is_same_v<T, Register16>) return read(inner);
+        else if constexpr (std::is_same_v<T, uint16_t>) return inner;
+        else throw std::invalid_argument("Invalid Binopt16");
+    }, val);
 }
 
 uint8_t Registers::unpack_binopt8(BinOpt8 val) {
@@ -31,14 +34,9 @@ uint8_t Registers::unpack_binopt8(BinOpt8 val) {
     else throw std::invalid_argument("Invalid BinOpt8 type");
 }
 
-//TODO: from discord:
-// changing PC normally incurs a 1 m-cycle penalty
-// only 2 opcodes do not have this penalty (jp hl and rst), which use some hardware trickery to avoid the penalty
-uint16_t Registers::write(Register16 reg, BinOpt16 val) {
+void Registers::write(Register16 reg, BinOpt16 val) {
     if(static_cast<int>(reg) > NUM_REGISTERS) throw std::invalid_argument("Invalid register16 at Registers::write");
-    uint16_t unpacked_value = unpack_binopt16(val);
-    registers[reg] = unpacked_value;
-    return unpacked_value;
+    registers[reg] = unpack_binopt16(val);
 }
 
 void Registers::write_half(Register8 reg, BinOpt8 val) {
@@ -57,6 +55,17 @@ void Registers::write_half(Register8 reg, BinOpt8 val) {
         default:
             throw std::invalid_argument("Invalid register8 at Registers::write_half"); 
     }
+}
+
+uint16_t Registers::adjust(Register16 reg, int16_t adjust) {
+    uint16_t adjusted = read(reg) + adjust;
+    write(reg, adjusted);
+    return adjusted;
+}
+uint8_t Registers::adjust_half(Register8 reg, int8_t adjust) {
+    uint8_t adjusted = read_half(reg) + adjust;
+    write_half(reg, adjusted);
+    return adjusted;
 }
 
 uint16_t Registers::read(Register16 reg) {

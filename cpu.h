@@ -31,7 +31,6 @@ public:
     uint16_t fetch_and_inc_imm_16();
     //TODO: implement (simulates one CPU cycle)
     void cycle(int cycles = 1);
-    uint8_t get_current_opcode();
     void print_state();
     uint8_t get_imm8_from_bits(int bits);
     uint16_t get_e_or_f_prefixed_ld_addr(int opcode);

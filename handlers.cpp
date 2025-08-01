@@ -31,11 +31,11 @@ int Cpu::ld_acc_to_memory(){
             break;
         case 0b10:
             memory.write_byte(HL, A);
-            registers.write(HL, static_cast<uint16_t>(registers.read(HL) + 1));
+            registers.adjust(HL, 1);
             break;
         case 0b11:
             memory.write_byte(HL, A);
-            registers.write(HL, static_cast<uint16_t>(registers.read(HL) - 1));
+            registers.adjust(HL, -1);
             break;
     }
     return 2;
@@ -65,6 +65,7 @@ int Cpu::step8_handler() {
 int Cpu::ld_imm8_to_dest8() {
     // next immediate in memory to dest calculated from opcode
     write_to_dest8(get_dest8_from_bits(get_bits_in_range(current_opcode, VERTICAL_VAL8_START, VERTICAL_VAL8_END)), fetch_and_inc());
+    //0x36 is LD [HL], n8
     return current_opcode == 0x36 ? 3 : 2;
 }
 
@@ -130,7 +131,7 @@ int Cpu::stop() {
 int Cpu::jr() {
     bool condition;
     int8_t offset = static_cast<int8_t>(fetch_and_inc());
-    switch(msb_8(get_current_opcode())) {
+    switch(msb_8(current_opcode)) {
         case 1:
             condition = true;
             break;

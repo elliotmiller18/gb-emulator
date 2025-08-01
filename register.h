@@ -49,8 +49,10 @@ public:
     uint8_t unpack_binopt8(BinOpt8 val);
     uint16_t unpack_binopt16(BinOpt16 val);
     /// @return the value written to reg
-    uint16_t write(Register16 reg, BinOpt16 val);
+    void write(Register16 reg, BinOpt16 val);
     void write_half(Register8 reg, BinOpt8 val);
+    uint16_t adjust(Register16 reg, int16_t adjust);
+    uint8_t adjust_half(Register8 reg, int8_t adjust);
     uint16_t read(Register16 reg);
     uint8_t read_half(Register8 reg);
     /// Returns the full register that a half register is a part of.

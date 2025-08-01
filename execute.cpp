@@ -22,15 +22,12 @@ void Cpu::run() {
     //TODO: implement hardware bugs i hate this shitty ass company 😭✌️
     int div_cycles = 0;
     int timer_cycles = 0;
-    // note: In this function we %= under the assumption that mcycles (the result of step) will 
-    // never exceed 64 (or 256 but not exceeding 64 obviously implies it won't exceed 256)
-    // which we can assume as step is only the result of one instruction which I believe is at most 5 machine cycles
-    for(int i = 0; i < 1000000; i++) {
+    for(;;) {
         int mcycles = step();
         //TODO: add halt handling
         div_cycles += mcycles;
         if(div_cycles >= CYCLES_TO_INC_DIV) {
-            div_cycles %= CYCLES_TO_INC_DIV;
+            div_cycles -= CYCLES_TO_INC_DIV;
             //we don't increment DIV in stop mode but the CPU does keep cycling
             if(!stop_mode) memory.tick_divider();
         }
@@ -38,7 +35,7 @@ void Cpu::run() {
         uint8_t timer_control = memory.read_byte(TIMER_CONTROL_ADDR);
         // bit 2 of timer_control enables or disables the timer increment
         if(get_bit(timer_control, 2)) {
-            int clock_select = get_bits_in_range(timer_control, 0, 2);
+            int clock_select = get_bits_in_range(timer_control, 0, 1);
             // 00 means 256 cycles to increment, otherwise 0b01 is 4, 0b10 is 16, and 0b11 is 64
             uint8_t cycles_to_inc_timer;
             switch(clock_select) {
