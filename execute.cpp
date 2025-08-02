@@ -25,6 +25,8 @@ void Cpu::run() {
     int timer_cycles = 0;
     for(;;) {
         int mcycles = step();
+        // ei enables interrupts only after the instruction following it is executed
+        if(queued_interrupt_enable && current_opcode != EI_OPCODE) {ime = true; queued_interrupt_enable = false;}
         //TODO: add halt handling
         div_cycles += mcycles;
         timer_cycles += mcycles;
@@ -68,4 +70,4 @@ void Cpu::run() {
 
 void Cpu::throttle_to_time(int mycyles) {
     //I do nothing! for now
-}
+} 

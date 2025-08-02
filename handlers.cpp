@@ -205,9 +205,8 @@ int Cpu::add8_handler() {
 }
 
 int Cpu::logical_op8_handler() {
-    // all xor instructions are and instructions with bit 3 set, and all ors are and instructions with 1 added to the msb
-    // this is a bit confusing to follow but if you see the table it'll make sense
     int msb = msb_8(current_opcode);
+    //just trust me :D
     LogicalOperation op = AND;
     if(msb == 0xF || msb == 0xB) op = OR;
     else if(msb == 0xA || msb == 0xE) op = XOR;
@@ -225,6 +224,7 @@ int Cpu::cp_handler() {
 }
 
 int Cpu::ret() {
+    if(current_opcode == RETI_OPCODE) queued_interrupt_enable = true;
     // ret and reti are 4, retcc (if taken) are 5, otherwise 2
     int mcycles = 4;
     bool condition = true;
@@ -312,6 +312,13 @@ int Cpu::f_prefixed_ldh() {
     return prefixed_ldh_mcycles(current_opcode);
 }
 
+int Cpu::di() {
+    ime = false;
+    //TODO: verify this, I'm pretty sure ei di will disable interrupts
+    queued_interrupt_enable = false;
+    return 1;
+}
+
 int Cpu::ld_add_sp_e8_to_hl() {
     registers.write(HL, add_sp_signed(static_cast<int8_t>(fetch_and_inc())));
     return 3;
@@ -320,6 +327,11 @@ int Cpu::ld_add_sp_e8_to_hl() {
 int Cpu::ld_sp_hl() {
     registers.write(SP, HL);
     return 2;
+}
+
+int Cpu::ei() {
+    //EI doesn't directly enable interrupts it sets them to be enabled after the execution of the next instr
+    queued_interrupt_enable = true;
 }
 
 int Cpu::cb_prefix() {

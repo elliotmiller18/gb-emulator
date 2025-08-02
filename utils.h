@@ -19,8 +19,12 @@ inline constexpr uint16_t TIMER_COUNTER_ADDR = 0xFF05;
 inline constexpr uint16_t TIMER_MODULO_ADDR = 0xFF06;
 inline constexpr uint16_t TIMER_CONTROL_ADDR = 0xFF07;
 
-inline constexpr uint16_t INTERRUPT_ENABLE_ADDR = 0xFFFF;
 inline constexpr uint16_t INTERRUPT_FLAG_ADDR = 0xFF0F;
+inline constexpr uint16_t INTERRUPT_ENABLE_ADDR = 0xFFFF;
+
+//opcodes
+inline constexpr uint16_t RETI_OPCODE = 0xD9;
+inline constexpr uint16_t EI_OPCODE = 0xFB;
 
 int msb_16(uint16_t arg);
 int lsb_16(uint16_t arg);

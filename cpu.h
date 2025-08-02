@@ -18,6 +18,8 @@ public:
     bool ime = false;
     bool debug;
 
+    bool queued_interrupt_enable = false;
+
     Cpu(const char* filename) : registers(Registers()), memory(registers, filename), debug(false) {}
     Cpu() : registers(Registers()), memory(registers) {}
     ~Cpu() {}
@@ -69,7 +71,6 @@ public:
     int add8_handler();
     int logical_op8_handler();
     int cp_handler();
-    //TODO: verify after research
     int ret();
     int pop();
     int jp();
@@ -77,15 +78,11 @@ public:
     int push();
     //TODO: implement later
     int rst() {invalid_opcode();}
-
-    //TODO: implement when we do interrupts
-    int reti() {invalid_opcode();}
     int cb_prefix();
     int e_prefixed_ldh();
     int add_sp_e8_handler();
     int f_prefixed_ldh();
-    //TODO: implement when we do interrupts
-    int di() {invalid_opcode();}
+    int di();
     int ld_add_sp_e8_to_hl();
     int ld_sp_hl();
     //TODO: implement when we do interrupts
