@@ -58,15 +58,14 @@ uint8_t Memory::read_byte(BinOpt addr) {
 }
 
 void Memory::write_word(BinOpt addr, BinOpt16 val) {
-    // TODO: validate implementation
     uint16_t unpacked_value = registers.unpack_binopt16(val);
     uint16_t unpacked_addr = unpack_addr(addr);
 
-    uint8_t upper_bits = msb_16(unpacked_value);
-    uint8_t lower_bits = lsb_16(unpacked_value);
+    uint8_t msb = msb_16(unpacked_value);
+    uint8_t lsb = lsb_16(unpacked_value);
 
-    write_byte(unpacked_addr, lower_bits);
-    write_byte(++unpacked_addr, upper_bits);
+    write_byte(unpacked_addr, lsb);
+    write_byte(++unpacked_addr, msb);
 }
 
 /// decrements, then writes

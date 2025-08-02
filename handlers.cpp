@@ -52,6 +52,7 @@ int Cpu::step16_handler(){
 }
 
 int Cpu::step8_handler() {
+    // destination is stored between 3-5
     int dest_bits = get_bits_in_range(current_opcode, VERTICAL_VAL8_START, VERTICAL_VAL8_END);
     RegisterOpt dest = get_dest8_from_bits(dest_bits);
     uint8_t unpacked = get_imm8_from_bits(dest_bits);
@@ -63,15 +64,16 @@ int Cpu::step8_handler() {
 }
 
 int Cpu::ld_imm8_to_dest8() {
+    RegisterOpt dest = get_dest8_from_bits(get_bits_in_range(current_opcode, VERTICAL_VAL8_START, VERTICAL_VAL8_END));
     // next immediate in memory to dest calculated from opcode
-    write_to_dest8(get_dest8_from_bits(get_bits_in_range(current_opcode, VERTICAL_VAL8_START, VERTICAL_VAL8_END)), fetch_and_inc());
+    write_to_dest8(dest, fetch_and_inc());
     //0x36 is LD [HL], n8
     return current_opcode == 0x36 ? 3 : 2;
 }
 
 int Cpu::rotate_left_handler() {
     // opcode is 0x000*0111 where bit 4 corresponds to whether or not carry is enabled (see func def)
-    registers.write_half(A, rotate_left(A, msb_8(current_opcode) == 0));
+    registers.write_half(A, rotate_left(A, get_bit(current_opcode, 4) == 0));
     // the non cb prefixed rotate left resets 0
     registers.set_flag(z, 0);
     return 1;
@@ -205,10 +207,10 @@ int Cpu::add8_handler() {
 int Cpu::logical_op8_handler() {
     // all xor instructions are and instructions with bit 3 set, and all ors are and instructions with 1 added to the msb
     // this is a bit confusing to follow but if you see the table it'll make sense
-    LogicalOperation op = AND;
     int msb = msb_8(current_opcode);
+    LogicalOperation op = AND;
     if(msb == 0xF || msb == 0xB) op = OR;
-    else if(lsb_8(current_opcode) > 7) op = XOR;
+    else if(msb == 0xA || msb == 0xE) op = XOR;
 
     uint8_t arg = msb_8(current_opcode) > 0xB ? fetch_and_inc() : get_imm8_from_bits(current_opcode % 8);
     registers.write_half(A, logical_operation8(arg, op));
@@ -223,12 +225,12 @@ int Cpu::cp_handler() {
 }
 
 int Cpu::ret() {
-    // ret and reti are 4, retcc (if taken) are 5
+    // ret and reti are 4, retcc (if taken) are 5, otherwise 2
     int mcycles = 4;
     bool condition = true;
 
-    if((current_opcode & 0b111) == 0){
-        // this whole process takes an extra mcycle
+    if(lsb_8(current_opcode) != 0x9) {
+        // getting flag takes an mcycle
         ++mcycles;
         condition = msb_8(current_opcode) == 0xC ? registers.get_flag(z) : registers.get_flag(c);
         // ret cc or ret not cc
@@ -250,10 +252,12 @@ int Cpu::pop() {
 
 int Cpu::jp() {
     bool condition;
+    
     if(lsb_8(current_opcode) == 0x3 || lsb_8(current_opcode) == 0x9) condition = true;
     else if(msb_8(current_opcode) == 0xC) condition = registers.get_flag(z);
     else if(msb_8(current_opcode) == 0xD) condition = registers.get_flag(c);
     else throw std::runtime_error("Invalid opcode in jp");
+
     if(lsb_8(current_opcode) == 0x2) condition = !condition;
 
     bool hl_jump = current_opcode == 0xE9;
@@ -270,7 +274,8 @@ int Cpu::call() {
     bool condition = true;
     uint16_t addr = fetch_and_inc_imm_16();
 
-    if((current_opcode & 0b11) == 0) {
+    //unconditional call is CD
+    if(current_opcode != 0xCD) {
         condition = msb_8(current_opcode) == 0xC ? registers.get_flag(z) : registers.get_flag(c);
         // call cc or call not cc
         if(lsb_8(current_opcode) == 0x4) condition = !condition;
@@ -335,18 +340,16 @@ int Cpu::cb_prefix() {
             arg = lsb_8(opcode) <= 0x7 ? shift_left(arg) : shift_right(arg, false);
             break;
         case 0x3:
-            //0x3 is for arith shifts
+            //0x3 is for arith shifts (but also swap)
             arg = lsb_8(opcode) <= 0x7 ? swap(arg) : shift_right(arg, true);
             break;
         case 0x4:
         case 0x5:
         case 0x6:
-            bit(get_bits_in_range(opcode, 3, 5), arg);
-            return 2;
         case 0x7:
             bit(get_bits_in_range(opcode, 3, 5), arg);
-            // this is a memref
-            return 3;
+            //110 (0x*6 and 0x*E) is a memref so 3 cycles
+            return (opcode & 0b111) == 0b110 ? 3 : 2;
         case 0x8:
         case 0x9:
         case 0xA:

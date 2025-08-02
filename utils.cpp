@@ -33,11 +33,12 @@ uint16_t Cpu::fetch_and_inc_imm_16() {
 }
 
 uint8_t Cpu::get_imm8_from_bits(int bits) {
-    RegisterOpt val = get_dest8_from_bits(bits);
-    if(std::get_if<Register16>(&val)) {
-        return memory.read_byte(registers.read(HL));
-    }
-    return registers.read_half(std::get<Register8>(val));
+    return std::visit([this](auto&& inner) -> uint8_t {
+        using inner_t = decltype(inner);
+        if constexpr(std::is_same_v<Register16, inner_t>)      return memory.read_byte(registers.read(HL));
+        else if constexpr (std::is_same_v<Register8, inner_t>) return registers.read_half(inner)
+        else throw std::invalid_argument("Invalid RegisterOpt")
+    }, get_dest8_from_bits(bits));
 }
 
 void Cpu::print_state() {
@@ -54,9 +55,9 @@ void Cpu::print_state() {
 uint16_t Cpu::get_e_or_f_prefixed_ld_addr(int opcode) {
     switch(lsb_8(opcode)) {
         case(0x0):
-            return fetch_and_inc() + 0xFF00;
+            return fetch_and_inc() | 0xFF00;
         case(0x2):
-            return registers.read_half(C) + 0xFF00;
+            return registers.read_half(C) | 0xFF00;
         case(0xA):
             return fetch_and_inc_imm_16();
         default:
