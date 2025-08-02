@@ -42,9 +42,6 @@ public:
     void throttle_to_time(int machine_cycles);
     void run();
     int step();
-    //TODO: implement
-    void enable_interrupts() {}
-    void disable_interrupts() {}
 
 // REGULAR INSTRUCTION HANDLERS
     int invalid_opcode();
@@ -76,7 +73,7 @@ public:
     int jp();
     int call();
     int push();
-    //TODO: implement later
+    //TODO: implement when we do interrupts
     int rst() {invalid_opcode();}
     int cb_prefix();
     int e_prefixed_ldh();
@@ -85,8 +82,7 @@ public:
     int di();
     int ld_add_sp_e8_to_hl();
     int ld_sp_hl();
-    //TODO: implement when we do interrupts
-    int ei() {invalid_opcode();}
+    int ei();
 
 
 /// OLD INSTRUCTIONS, mostly just used for reference

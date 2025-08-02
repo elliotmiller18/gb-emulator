@@ -121,13 +121,14 @@ int Cpu::rotate_right_handler() {
 }
 
 int Cpu::stop() {
-    disable_interrupts();
+    //TODO: check what this does with interrupts
     stop_mode = true;
     // stop resets the divider
     memory.write_byte(DIV_ADDR, static_cast<uint8_t>(0));
     //there's junk data after
     fetch_and_inc();
-    return 1;
+    // doesn't really take any cycles
+    return 0;
 }
 
 int Cpu::jr() {
@@ -332,6 +333,7 @@ int Cpu::ld_sp_hl() {
 int Cpu::ei() {
     //EI doesn't directly enable interrupts it sets them to be enabled after the execution of the next instr
     queued_interrupt_enable = true;
+    return 1;
 }
 
 int Cpu::cb_prefix() {
