@@ -121,7 +121,7 @@ int Cpu::rotate_right_handler() {
 }
 
 int Cpu::stop() {
-    registers.disable_interrupts();
+    disable_interrupts();
     stop_mode = true;
     // stop resets the divider
     memory.write_byte(DIV_ADDR, static_cast<uint8_t>(0));

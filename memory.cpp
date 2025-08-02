@@ -88,7 +88,10 @@ void Memory::tick_divider() {
 }
 
 bool Memory::tick_timer() {
+    //TODO: when we add cycle by cycle simulation, we need to support caching the old value of timer modulo if it's written on the same
+    //cycle as ticking
     if(memory[TIMER_COUNTER_ADDR] == 0xFF) {
+        //TODO: we should be interrupting before resetting it
         memory[TIMER_COUNTER_ADDR] = memory[TIMER_MODULO_ADDR];
         return true;
     }

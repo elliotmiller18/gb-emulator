@@ -13,8 +13,10 @@ public:
     Registers registers;
     Memory memory;
     int current_opcode;
-    bool debug;
     bool stop_mode = false;
+    /// disabled on boot
+    bool ime = false;
+    bool debug;
 
     Cpu(const char* filename) : registers(Registers()), memory(registers, filename), debug(false) {}
     Cpu() : registers(Registers()), memory(registers) {}
@@ -38,6 +40,9 @@ public:
     void throttle_to_time(int machine_cycles);
     void run();
     int step();
+    //TODO: implement
+    void enable_interrupts() {}
+    void disable_interrupts() {}
 
 // REGULAR INSTRUCTION HANDLERS
     int invalid_opcode();

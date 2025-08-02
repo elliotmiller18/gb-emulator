@@ -17,6 +17,7 @@ int Cpu::step() {
     return (this->*opcode_table[current_opcode])();
 }
 
+//TODO: generally refactor this to support the actual non-hacky implementation of having an internal divider register that the timer tracks
 void Cpu::run() {
     //TODO: https://gbdev.io/pandocs/Timer_Obscure_Behaviour.html#relation-between-timer-and-divider-register
     //TODO: implement hardware bugs i hate this shitty ass company 😭✌️
@@ -26,6 +27,7 @@ void Cpu::run() {
         int mcycles = step();
         //TODO: add halt handling
         div_cycles += mcycles;
+        timer_cycles += mcycles;
         if(div_cycles >= CYCLES_TO_INC_DIV) {
             div_cycles -= CYCLES_TO_INC_DIV;
             //we don't increment DIV in stop mode but the CPU does keep cycling
@@ -65,5 +67,5 @@ void Cpu::run() {
 }
 
 void Cpu::throttle_to_time(int mycyles) {
-    //I do nothing!
+    //I do nothing! for now
 }
