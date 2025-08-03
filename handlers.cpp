@@ -184,6 +184,15 @@ int Cpu::complement_carry_flag() {
     return 1;
 }
 
+int Cpu::halt() {
+    // if ime there's a pending interrupt, we enter the weird buggy halt mode
+    buggy_halt_mode = !pending_interrupt();
+    // otherwise, we enter standard halt mode
+    halt_mode = !buggy_halt_mode;
+    return 0;
+
+}
+
 int Cpu::ld_reg_or_memref_to_dest8() {
     RegisterOpt dest = get_dest8_from_bits(get_bits_in_range(current_opcode, VERTICAL_VAL8_START, VERTICAL_VAL8_END));
     write_to_dest8(dest, get_imm8_from_bits(current_opcode % 8));

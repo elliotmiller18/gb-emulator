@@ -7,3 +7,7 @@ The magic numbers in this project are genuinely awful. For some unknowable reaso
 const THREE = 3;
 ```
 in my code.
+
+**STOP**
+
+This instruction is actually not used in a single official GB rom, but it's good to have in case some crazy gameboy homebrew dev is using it in their games

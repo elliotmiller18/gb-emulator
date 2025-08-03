@@ -14,6 +14,8 @@ public:
     Memory memory;
     int current_opcode;
     bool stop_mode = false;
+    bool halt_mode = false;
+    bool buggy_halt_mode = false;
     /// disabled on boot
     bool ime = false;
     bool debug;
@@ -30,19 +32,22 @@ public:
         XOR,
     };
     
-// NON-INSTRUCTIONS
+// UTILS
     uint8_t fetch_and_inc();
     uint16_t fetch_and_inc_imm_16();
-    //TODO: implement (simulates one CPU cycle)
-    void cycle(int cycles = 1);
     void print_state();
     uint8_t get_imm8_from_bits(int bits);
     uint16_t get_e_or_f_prefixed_ld_addr(int opcode);
     void write_to_dest8(RegisterOpt dest, uint8_t imm8);
+    // ime is true and the bitwise and of the two interrupt control bytes != 0 means pending interrupt
+    inline bool pending_interrupt() {return ime && (memory.read_byte(INTERRUPT_ENABLE_ADDR) & memory.read_byte(INTERRUPT_FLAG_ADDR));}
+    
+// CPU ACTIONS
     void throttle_to_time(int machine_cycles);
     void run();
     int step();
-
+    bool check_and_handle_interrupts();
+    
 // REGULAR INSTRUCTION HANDLERS
     int invalid_opcode();
     int noop();
@@ -63,8 +68,7 @@ public:
     int set_carry_flag();
     int complement_carry_flag();
     int ld_reg_or_memref_to_dest8();
-    //TODO: implement when we do interrupts
-    int halt() {invalid_opcode();}
+    int halt();
     int add8_handler();
     int logical_op8_handler();
     int cp_handler();

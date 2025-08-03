@@ -2,9 +2,12 @@ This is a GameBoy emulator with CPU simulation (clock and interrupts atm.) Later
 
 Roadmap:
 
-1. Graphics (openGL)
-2. Audio (macOS only)
-3. Sub-instruction timing
-4. Hyper-accurate internal divider circuit simulation (including hardware bugs)
-5. Linux support
-6. Windows support
+- Finish interrupts
+- Input
+- Proper memory banking
+- Graphics (openGL)
+- Audio (macOS only)
+- Sub-instruction timing
+- Hyper-accurate internal divider circuit simulation (including hardware bugs)
+- Linux support
+- Windows support

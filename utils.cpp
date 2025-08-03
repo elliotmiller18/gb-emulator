@@ -16,10 +16,6 @@ std::string r16_name(int bits) {
     }
 }
 
-void Cpu::cycle(int cycles) {
-    for(int i = 0; i < cycles; i++) {/*std::cout << "cycling\n";*/}
-}
-
 uint8_t Cpu::fetch_and_inc() {
     uint16_t old_pc = registers.read(PC);
     registers.adjust(PC, 1);
@@ -99,6 +95,18 @@ int lsb_8(uint8_t val) {
 
 bool get_bit(int target, int position) {
     return (target >> position) & 1;
+}
+
+uint8_t Cpu::reset_bit(int bit, BinOpt8 arg) {
+    if(bit > 0b111) throw std::invalid_argument("Arg must be 3 bit integer");
+    uint8_t unpacked = registers.unpack_binopt8(arg);
+    return (unpacked & ~(1 << bit));
+}
+
+uint8_t Cpu::set_bit(int bit, BinOpt8 arg) {
+    if(bit > 0b111) throw std::invalid_argument("Arg must be 3 bit integer");
+    uint8_t unpacked = registers.unpack_binopt8(arg);
+    return (unpacked & (1 << bit));
 }
 
 /// start and end are both inclusive

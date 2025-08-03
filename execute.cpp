@@ -24,10 +24,21 @@ void Cpu::run() {
     int div_cycles = 0;
     int timer_cycles = 0;
     for(;;) {
-        int mcycles = step();
+        int mcycles = 0;
+        bool pending_interrupt_flag = pending_interrupt();
+
+        if(halt_mode) halt_mode = pending_interrupt_flag;
+        //TODO: implement hardware bug here
+        else if(buggy_halt_mode) buggy_halt_mode = pending_interrupt_flag;
+        else mcycles = step();
+
         // ei enables interrupts only after the instruction following it is executed
         if(queued_interrupt_enable && current_opcode != EI_OPCODE) {ime = true; queued_interrupt_enable = false;}
-        //TODO: add halt handling
+
+
+        // for now we just in case we keep the checks that we actually want to run the interrupt
+        if(pending_interrupt_flag && check_and_handle_interrupts()) mcycles += 5;
+
         div_cycles += mcycles;
         timer_cycles += mcycles;
         if(div_cycles >= CYCLES_TO_INC_DIV) {
@@ -57,7 +68,6 @@ void Cpu::run() {
             }
         }
 
-        //TODO: interrupts here
         if(debug) {
             if(stop_mode) std::cout << "stopped\n";
             else std::cout << "divider: " << static_cast<int>(memory.read_byte(DIV_ADDR)) << "\n";

@@ -124,18 +124,6 @@ bool Cpu::bit(int bit, BinOpt8 arg) {
     return test;
 }
 
-uint8_t Cpu::reset_bit(int bit, BinOpt8 arg) {
-    if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG.data());
-    uint8_t unpacked = registers.unpack_binopt8(arg);
-    return (unpacked & ~(1 << bit));
-}
-
-uint8_t Cpu::set_bit(int bit, BinOpt8 arg) {
-    if(bit > 0b111) throw std::invalid_argument(INVALID_ARG_MSG.data());
-    uint8_t unpacked = registers.unpack_binopt8(arg);
-    return (unpacked & (1 << bit));
-}
-
 uint8_t Cpu::shift_left(BinOpt8 operand) {
     uint8_t unpacked = registers.unpack_binopt8(operand);
     uint8_t res = unpacked << 1;
