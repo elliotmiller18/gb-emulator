@@ -8,6 +8,7 @@ Roadmap:
 - Graphics (openGL)
 - Audio (macOS only)
 - Sub-instruction timing
-- Hyper-accurate internal divider circuit simulation (including hardware bugs)
+- ~~Hyper-accurate internal divider circuit simulation~~ this was actually very easy
+- (including hardware bugs) this part will not be as easy ...
 - Linux support
 - Windows support
