@@ -41,6 +41,7 @@ public:
     void write_to_dest8(RegisterOpt dest, uint8_t imm8);
     // ime is true and the bitwise and of the two interrupt control bytes != 0 means pending interrupt
     bool pending_interrupt();
+    void request_interrupt(uint8_t control_bit);
     
 // CPU ACTIONS
     void run();

@@ -9,13 +9,7 @@ constexpr int TIMER_IHANDLER = 0x50;
 constexpr int SERIAL_IHANDLER = 0x58;
 constexpr int JOYPAD_IHANDLER = 0x60;
 
-//uint8_t so we can use reset_bit
-constexpr uint8_t VBLANK_CONTROL_BIT = 0;
-constexpr uint8_t LCD_CONTROL_BIT = 1;
-constexpr uint8_t TIMER_CONTROL_BIT = 2;
-//unused for the forseeable future
-constexpr uint8_t SERIAL_CONTROL_BIT = 3;
-constexpr uint8_t JOYPAD_CONTROL_BIT = 4;
+
 
 bool Cpu::check_and_handle_interrupts() {
     if(!ime) return false;
@@ -56,4 +50,10 @@ bool Cpu::check_and_handle_interrupts() {
     registers.write(PC, ihandler_addr);
 
     return true;
+}
+
+void Cpu::request_interrupt(uint8_t control_bit) {
+    uint8_t interrupt_request = memory.read_byte(INTERRUPT_FLAG_ADDR);
+    set_bit(interrupt_request, control_bit);
+    memory.write_byte(INTERRUPT_FLAG_ADDR, interrupt_request);
 }

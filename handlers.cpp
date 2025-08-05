@@ -324,7 +324,7 @@ int Cpu::f_prefixed_ldh() {
 
 int Cpu::di() {
     ime = false;
-    //TODO: verify this, I'm pretty sure ei di will disable interrupts
+    // "di has superpowers" - the discord
     queued_interrupt_enable = false;
     return 1;
 }
