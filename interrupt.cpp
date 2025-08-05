@@ -48,15 +48,12 @@ bool Cpu::check_and_handle_interrupts() {
     if(ihandler_addr == 0) return false;
 
     ime = false;
-
     // mark interrupt as serviced
     reset_bit(interrupt_requested, control_bit);
     memory.write_byte(INTERRUPT_FLAG_ADDR, interrupt_requested);
-
     // call interrupt handler
     memory.write_word_and_dec_sp(PC);
     registers.write(PC, ihandler_addr);
-
 
     return true;
 }

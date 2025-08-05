@@ -32,8 +32,8 @@ uint8_t Cpu::get_imm8_from_bits(int bits) {
     return std::visit([this](auto&& inner) -> uint8_t {
         using inner_t = decltype(inner);
         if constexpr(std::is_same_v<Register16, inner_t>)      return memory.read_byte(registers.read(HL));
-        else if constexpr (std::is_same_v<Register8, inner_t>) return registers.read_half(inner)
-        else throw std::invalid_argument("Invalid RegisterOpt")
+        else if constexpr (std::is_same_v<Register8, inner_t>) return registers.read_half(inner);
+        else throw std::invalid_argument("Invalid RegisterOpt");
     }, get_dest8_from_bits(bits));
 }
 
@@ -68,6 +68,10 @@ void Cpu::write_to_dest8(RegisterOpt dest, uint8_t imm8) {
         else if constexpr(std::is_same_v<Register16, dest_type>) memory.write_byte(HL, imm8);
         else throw std::runtime_error("Invalid destination in ld_reg_or_memref_to_dest8");
     }, dest);
+}
+
+bool Cpu::pending_interrupt() {
+    return ime && (memory.read_byte(INTERRUPT_ENABLE_ADDR) & memory.read_byte(INTERRUPT_FLAG_ADDR));
 }
 
 // BIT OPERATIONS

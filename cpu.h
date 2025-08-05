@@ -40,10 +40,9 @@ public:
     uint16_t get_e_or_f_prefixed_ld_addr(int opcode);
     void write_to_dest8(RegisterOpt dest, uint8_t imm8);
     // ime is true and the bitwise and of the two interrupt control bytes != 0 means pending interrupt
-    inline bool pending_interrupt() {return ime && (memory.read_byte(INTERRUPT_ENABLE_ADDR) & memory.read_byte(INTERRUPT_FLAG_ADDR));}
+    bool pending_interrupt();
     
 // CPU ACTIONS
-    void throttle_to_time(int machine_cycles);
     void run();
     int step();
     bool check_and_handle_interrupts();

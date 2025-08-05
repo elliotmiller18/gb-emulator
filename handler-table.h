@@ -221,7 +221,7 @@ static constexpr opcode_handler opcode_table[NUM_1_BYTE_OPCODES] = {
 /*d6, */            &Cpu::add8_handler,
 /*d7, */            &Cpu::rst,
 /*d8, */            &Cpu::ret,
-/*d9, */            &Cpu::reti,
+/*d9, */            &Cpu::ret,
 /*da, */            &Cpu::jp,
 /*db, */            &Cpu::invalid_opcode,
 /*dc, */            &Cpu::call,
