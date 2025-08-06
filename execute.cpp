@@ -36,6 +36,9 @@ void Cpu::run() {
     for(;;) {
         auto frame_start_time = std::chrono::steady_clock::now();
         
+        //TODO: check if we want this before or after interrupts
+        poll_input();
+        
         int mcycles = 0;
         bool pending_interrupt_flag = pending_interrupt();
 

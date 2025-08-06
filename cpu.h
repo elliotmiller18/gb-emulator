@@ -42,6 +42,7 @@ public:
     // ime is true and the bitwise and of the two interrupt control bytes != 0 means pending interrupt
     bool pending_interrupt();
     void request_interrupt(uint8_t control_bit);
+    void poll_input();
     
 // CPU ACTIONS
     void run();
@@ -101,10 +102,6 @@ public:
 // bit operations
     /// tests reg[bit] and sets the zero flag accordingly
     bool bit(int bit, BinOpt8 arg);
-    /// sets provided bit to 0
-    uint8_t reset_bit(int bit, BinOpt8 arg);
-    /// sets provided bit to 1
-    uint8_t set_bit(int bit, BinOpt8 arg);
     uint8_t shift_left(BinOpt8 operand);
     uint8_t shift_right(BinOpt8 operand, bool preserveBit7);
     /// @param carry if true, but 0 is set to bit 7, if false, bit 0 is set to CY (confusing, I know)

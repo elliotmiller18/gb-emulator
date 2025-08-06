@@ -101,16 +101,18 @@ bool get_bit(int target, int position) {
     return (target >> position) & 1;
 }
 
-uint8_t Cpu::reset_bit(int bit, BinOpt8 arg) {
+uint8_t reset_bit(int bit, uint8_t arg) {
     if(bit > 0b111) throw std::invalid_argument("Arg must be 3 bit integer");
-    uint8_t unpacked = registers.unpack_binopt8(arg);
-    return (unpacked & ~(1 << bit));
+    return (arg & ~(1 << bit));
 }
 
-uint8_t Cpu::set_bit(int bit, BinOpt8 arg) {
+uint8_t set_bit(int bit, uint8_t arg) {
     if(bit > 0b111) throw std::invalid_argument("Arg must be 3 bit integer");
-    uint8_t unpacked = registers.unpack_binopt8(arg);
-    return (unpacked & (1 << bit));
+    return (arg & (1 << bit));
+}
+
+uint8_t set_or_reset_bit(int bit, uint8_t arg, bool set) {
+    return set ? set_bit(bit, arg) : reset_bit(bit, arg);
 }
 
 /// start and end are both inclusive
