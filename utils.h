@@ -14,6 +14,7 @@ constexpr int VERTICAL_VAL8_END = 5;
 constexpr int HORIZONTAL_DEST8_START_BIT = 4;
 constexpr int HORIZONTAL_DEST8_END_BIT = 5;
 
+constexpr uint16_t JOYPAD_ADDR = 0xFF00;
 constexpr uint16_t DIV_ADDR = 0xFF04;
 constexpr uint16_t TIMER_COUNTER_ADDR = 0xFF05;
 constexpr uint16_t TIMER_MODULO_ADDR = 0xFF06;

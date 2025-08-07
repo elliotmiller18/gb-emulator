@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX := clang++
-CXXFLAGS := -O3 -Wall -Wextra -std=c++20 -I.
+CXXFLAGS := -O0 -g -Wall -Wextra -std=c++20 -I.
 
 SDL_CXXFLAGS := $(shell sdl2-config --cflags)
 SDL_LDFLAGS := $(shell sdl2-config --libs)

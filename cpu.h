@@ -48,6 +48,7 @@ public:
     void run();
     int step();
     bool check_and_handle_interrupts();
+    void boot();
     
 // REGULAR INSTRUCTION HANDLERS
     int invalid_opcode();

@@ -12,7 +12,7 @@ Registers::~Registers() {}
 uint16_t Registers::unpack_binopt(BinOpt val) {
     // first unpack val into either a BinOpt16 or BinOpt8
     return std::visit([this](auto&& inner) -> uint16_t {
-        using T = decltype(inner);
+        using T = std::decay_t<decltype(inner)>;
         if constexpr (std::is_same_v<T, BinOpt16>)     return unpack_binopt16(inner);
         else if constexpr (std::is_same_v<T, BinOpt8>) return static_cast<uint16_t>(unpack_binopt8(inner));
         else throw std::invalid_argument("Invalid BinOpt type");
@@ -21,7 +21,7 @@ uint16_t Registers::unpack_binopt(BinOpt val) {
 
 uint16_t Registers::unpack_binopt16(BinOpt16 val) {
     return std::visit([this](auto&& inner) -> uint16_t {
-        using T = decltype(inner);
+        using T = std::decay_t<decltype(inner)>;
         if constexpr (std::is_same_v<T, Register16>) return read(inner);
         else if constexpr (std::is_same_v<T, uint16_t>) return inner;
         else throw std::invalid_argument("Invalid Binopt16");

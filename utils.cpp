@@ -108,7 +108,7 @@ uint8_t reset_bit(int bit, uint8_t arg) {
 
 uint8_t set_bit(int bit, uint8_t arg) {
     if(bit > 0b111) throw std::invalid_argument("Arg must be 3 bit integer");
-    return (arg & (1 << bit));
+    return (arg | (1 << bit));
 }
 
 uint8_t set_or_reset_bit(int bit, uint8_t arg, bool set) {

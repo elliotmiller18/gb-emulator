@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "utils.h"
 #include "handler-table.h"
+#include <SDL.h>
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -33,10 +34,18 @@ void Cpu::run() {
     auto last_lcd_refresh = last_div_inc;
     auto lag_time = std::chrono::nanoseconds(0);
     
-    for(;;) {
+    bool running = true;
+    SDL_Event event;
+
+    while(running) {
         auto frame_start_time = std::chrono::steady_clock::now();
         
         //TODO: check if we want this before or after interrupts
+        while(SDL_PollEvent(&event)) {
+            if(event.type == SDL_QUIT) {
+                running = false;
+            }
+        }
         poll_input();
         
         int mcycles = 0;
@@ -105,4 +114,10 @@ void Cpu::run() {
             lag_time += frame_runtime - (SYSTEM_CLOCK_TICKRATE_NS * mcycles);
         }
     }
+}
+
+constexpr uint8_t JOYPAD_STARTING_VAL = 0xFF;
+
+void Cpu::boot() {
+    memory.write_byte(JOYPAD_ADDR, JOYPAD_STARTING_VAL);
 }

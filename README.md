@@ -4,6 +4,7 @@ Roadmap:
 
 - ~~Finish interrupts~~
 - ~~Input~~
+- Properly boot the CPU without running the boot rom because it's illegal to include
 - Proper memory banking
 - Graphics (openGL)
 - Audio (macOS only)

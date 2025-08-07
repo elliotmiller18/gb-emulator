@@ -1,9 +1,8 @@
 #include "cpu.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <unordered_map>
 #include "utils.h"
 
-constexpr uint8_t JOYPAD_ADDR = 0xFF00;
 constexpr uint8_t SELECT_BUTTONS_BIT = 5;
 constexpr uint8_t SELECT_DPAD_BIT = 4; 
 
@@ -47,7 +46,7 @@ uint8_t calculate_input_state(const uint8_t* keystates, const JoypadButtons butt
     uint8_t raw = 0xFF;
     for(int i = 0; i < 4; i++) {
         // set or reset bit depending on keystate
-        set_or_reset_bit(get_button_bit(buttons[i]), raw, !keystates[control_map[buttons[i]]]);
+        raw = set_or_reset_bit(get_button_bit(buttons[i]), raw, !keystates[control_map[buttons[i]]]);
     }
     return raw;
 }
@@ -55,8 +54,15 @@ uint8_t calculate_input_state(const uint8_t* keystates, const JoypadButtons butt
 void Cpu::poll_input() {
     uint8_t joypad_register = memory.memory[JOYPAD_ADDR]; 
     const uint8_t* keystates = SDL_GetKeyboardState(NULL);
-    // 0 is true, 1 is false for this
-    if(!get_bit(joypad_register, SELECT_BUTTONS_BIT)) joypad_register &= calculate_input_state(keystates, select_buttons_joypad_buttons);
-    if(!get_bit(joypad_register, SELECT_DPAD_BIT)) joypad_register &= calculate_input_state(keystates, select_dpad_joypad_buttons);
-    memory.memory[JOYPAD_ADDR] = joypad_register;
+    
+    uint8_t new_state = (joypad_register & 0xF0) | 0x0F;
+    
+    if(!get_bit(joypad_register, SELECT_BUTTONS_BIT)) {
+        new_state &= calculate_input_state(keystates, select_buttons_joypad_buttons);
+    }
+    if(!get_bit(joypad_register, SELECT_DPAD_BIT)) {
+        new_state &= calculate_input_state(keystates, select_dpad_joypad_buttons);
+    }
+    
+    memory.memory[JOYPAD_ADDR] = new_state;
 }
