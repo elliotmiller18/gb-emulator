@@ -21,22 +21,22 @@ bool Cpu::check_and_handle_interrupts() {
     // interrupt priority goes in reverse order, meaning that vblank has top prio and joypad has lowest
     uint16_t ihandler_addr = 0;
     uint8_t control_bit = 0;
-    if(get_bit(interrupt_requested, VBLANK_CONTROL_BIT) && get_bit(interrupt_enable, VBLANK_CONTROL_BIT)) {
+    if(get_bit(interrupt_requested, VBLANK_INTERRUPT_CONTROL_BIT) && get_bit(interrupt_enable, VBLANK_INTERRUPT_CONTROL_BIT)) {
         ihandler_addr = VBLANK_IHANDLER;
-        control_bit = VBLANK_CONTROL_BIT;
-    } else if(get_bit(interrupt_requested, LCD_CONTROL_BIT) && get_bit(interrupt_enable, LCD_CONTROL_BIT)) {
+        control_bit = VBLANK_INTERRUPT_CONTROL_BIT;
+    } else if(get_bit(interrupt_requested, LCD_INTERRUPT_CONTROL_BIT) && get_bit(interrupt_enable, LCD_INTERRUPT_CONTROL_BIT)) {
         // lcd interrupt corresponds to the stat interrupt, idk it's named like this
         ihandler_addr = STAT_IHANDLER;
-        control_bit = LCD_CONTROL_BIT;
-    } else if(get_bit(interrupt_requested, TIMER_CONTROL_BIT) && get_bit(interrupt_enable, TIMER_CONTROL_BIT)) {
+        control_bit = LCD_INTERRUPT_CONTROL_BIT;
+    } else if(get_bit(interrupt_requested, TIMER_INTERRUPT_CONTROL_BIT) && get_bit(interrupt_enable, TIMER_INTERRUPT_CONTROL_BIT)) {
         ihandler_addr = TIMER_IHANDLER;
-        control_bit = TIMER_CONTROL_BIT;
-    } else if(get_bit(interrupt_requested, SERIAL_CONTROL_BIT) && get_bit(interrupt_enable, SERIAL_CONTROL_BIT)) {
+        control_bit = TIMER_INTERRUPT_CONTROL_BIT;
+    } else if(get_bit(interrupt_requested, SERIAL_INTERRUPT_CONTROL_BIT) && get_bit(interrupt_enable, SERIAL_INTERRUPT_CONTROL_BIT)) {
         ihandler_addr = SERIAL_IHANDLER;
-        control_bit = SERIAL_CONTROL_BIT;
-    } else if(get_bit(interrupt_requested, JOYPAD_CONTROL_BIT) && get_bit(interrupt_enable, JOYPAD_CONTROL_BIT)) {
+        control_bit = SERIAL_INTERRUPT_CONTROL_BIT;
+    } else if(get_bit(interrupt_requested, JOYPAD_INTERRUPT_CONTROL_BIT) && get_bit(interrupt_enable, JOYPAD_INTERRUPT_CONTROL_BIT)) {
         ihandler_addr = JOYPAD_IHANDLER;
-        control_bit = JOYPAD_CONTROL_BIT;
+        control_bit = JOYPAD_INTERRUPT_CONTROL_BIT;
     }
 
     if(ihandler_addr == 0) return false;

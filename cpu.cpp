@@ -88,7 +88,7 @@ void Cpu::run() {
                 default: throw std::runtime_error("get_bits_in_range returned an impossible value");
             }
             if(current_time - last_timer_inc >= timer_rate_ns) {
-                if(memory.tick_timer()) request_interrupt(TIMER_CONTROL_BIT);
+                if(memory.tick_timer()) request_interrupt(TIMER_INTERRUPT_CONTROL_BIT);
                 last_timer_inc += timer_rate_ns;
             }
         }
@@ -98,7 +98,7 @@ void Cpu::run() {
         // check if we need to draw a new frame
         if(current_time - last_lcd_refresh > LCD_REFRESH_RATE_NS) {
             last_lcd_refresh += LCD_REFRESH_RATE_NS;
-            request_interrupt(LCD_CONTROL_BIT);
+            request_interrupt(LCD_INTERRUPT_CONTROL_BIT);
         }
 
         if(debug) print_state();

@@ -1,7 +1,7 @@
 #include "cpu.h"
+#include "utils.h"
 #include <SDL.h>
 #include <unordered_map>
-#include "utils.h"
 
 constexpr uint8_t SELECT_BUTTONS_BIT = 5;
 constexpr uint8_t SELECT_DPAD_BIT = 4; 
@@ -64,5 +64,6 @@ void Cpu::poll_input() {
         new_state &= calculate_input_state(keystates, select_dpad_joypad_buttons);
     }
     
+    if(joypad_register != new_state) request_interrupt(JOYPAD_INTERRUPT_CONTROL_BIT);
     memory.memory[JOYPAD_ADDR] = new_state;
 }

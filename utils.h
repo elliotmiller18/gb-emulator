@@ -28,12 +28,12 @@ constexpr uint16_t RETI_OPCODE = 0xD9;
 constexpr uint16_t EI_OPCODE = 0xFB;
 
 //uint8_t so we can use reset_bit
-constexpr uint8_t VBLANK_CONTROL_BIT = 0;
-constexpr uint8_t LCD_CONTROL_BIT = 1;
-constexpr uint8_t TIMER_CONTROL_BIT = 2;
+constexpr uint8_t VBLANK_INTERRUPT_CONTROL_BIT = 0;
+constexpr uint8_t LCD_INTERRUPT_CONTROL_BIT = 1;
+constexpr uint8_t TIMER_INTERRUPT_CONTROL_BIT = 2;
 // serial unused for the forseeable future (this is for serial data transfer between gameboys)
-constexpr uint8_t SERIAL_CONTROL_BIT = 3;
-constexpr uint8_t JOYPAD_CONTROL_BIT = 4;
+constexpr uint8_t SERIAL_INTERRUPT_CONTROL_BIT = 3;
+constexpr uint8_t JOYPAD_INTERRUPT_CONTROL_BIT = 4;
 
 int msb_16(uint16_t arg);
 int lsb_16(uint16_t arg);
