@@ -306,6 +306,19 @@ int Cpu::push() {
     return 4;
 }
 
+int Cpu::rst() {
+    // rst instructions ending in 7 go to $00, $10, $20 and $30
+    // rst instructions ending in F go to $08, $18, $28, and $38
+    // and rsts are prefixed with C, D, E, or F. C = 00/08, D == 10/18 and so on
+    // this logic seems hard to follow but knowing that it should make sense
+    // remember that this is NOT ten, twenty, thirty, but hex numbers that look obnoxiously like decimal numbers
+    memory.write_word_and_dec_sp(PC);
+    uint16_t addr = (msb_8(current_opcode) - 0xC) * 0x10;
+    if(lsb_8(current_opcode) == 0xF) addr += 8;
+    registers.write(PC, addr);
+    return 4;
+}
+
 int Cpu::e_prefixed_ldh() {
     memory.write_byte(get_e_or_f_prefixed_ld_addr(current_opcode), A);
     // this is the dirtiest but cleanest way to do it

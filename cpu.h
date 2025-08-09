@@ -79,8 +79,7 @@ public:
     int jp();
     int call();
     int push();
-    //TODO: implement when we do interrupts
-    int rst() {invalid_opcode();}
+    int rst();
     int cb_prefix();
     int e_prefixed_ldh();
     int add_sp_e8_handler();
