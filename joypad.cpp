@@ -20,6 +20,7 @@ enum class JoypadButtons {
 constexpr JoypadButtons select_buttons_joypad_buttons[] = {JoypadButtons::A, JoypadButtons::B, JoypadButtons::Select, JoypadButtons::Start};
 constexpr JoypadButtons select_dpad_joypad_buttons[] = {JoypadButtons::Right, JoypadButtons::Left, JoypadButtons::Up, JoypadButtons::Down};
 
+// Maps both Action and D-Pad buttons to the lower four bit positions (0-3)
 uint8_t get_button_bit(JoypadButtons button) {
     // 4 button input bits * 2 for the two modes
     return static_cast<uint8_t>(button) % 4;
@@ -64,6 +65,7 @@ void Cpu::poll_input() {
         new_state &= calculate_input_state(keystates, select_dpad_joypad_buttons);
     }
     
-    if(joypad_register != new_state) request_interrupt(JOYPAD_INTERRUPT_CONTROL_BIT);
+    // this interrupt is requested when any of the low bits of the p1 input change from high to low
+    if((joypad_register & new_state) != joypad_register) request_interrupt(JOYPAD_INTERRUPT_CONTROL_BIT);
     memory.memory[JOYPAD_ADDR] = new_state;
 }

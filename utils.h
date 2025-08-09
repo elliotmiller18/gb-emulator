@@ -29,7 +29,9 @@ constexpr uint16_t EI_OPCODE = 0xFB;
 
 //uint8_t so we can use reset_bit
 constexpr uint8_t VBLANK_INTERRUPT_CONTROL_BIT = 0;
+//lcd and state are the same thing
 constexpr uint8_t LCD_INTERRUPT_CONTROL_BIT = 1;
+constexpr uint8_t STAT_INTERRUPT_CONTOL_BIT = LCD_INTERRUPT_CONTROL_BIT;
 constexpr uint8_t TIMER_INTERRUPT_CONTROL_BIT = 2;
 // serial unused for the forseeable future (this is for serial data transfer between gameboys)
 constexpr uint8_t SERIAL_INTERRUPT_CONTROL_BIT = 3;

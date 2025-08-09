@@ -11,14 +11,14 @@ constexpr int MASTER_CLOCK_SPEED_HZ = 4'194'304;
 // the length of one machine cycle
 constexpr double SYSTEM_CLOCK_SPEED_HZ = MASTER_CLOCK_SPEED_HZ / 4;
 constexpr double DIV_TICKRATE_HZ = 16384;
-constexpr double LCD_REFRESH_RATE_HZ = 59.7;
+constexpr double VBLANK_REQUEST_RATE_HZ = 59.7;
 // 1 second (1 billion ns) divided by the increment rate
 constexpr long long SECOND_NS = 1'000'000'000.0;
 // note that there is some tiny rounding error here on the subnanosecond level but we can accept that error as 
 // simulating subnanosecond time is challenging
 constexpr auto DIV_TICKRATE_NS = std::chrono::nanoseconds(static_cast<long long>(SECOND_NS / DIV_TICKRATE_HZ));
 constexpr auto SYSTEM_CLOCK_TICKRATE_NS = std::chrono::nanoseconds(static_cast<long long>(SECOND_NS / SYSTEM_CLOCK_SPEED_HZ));
-constexpr auto LCD_REFRESH_RATE_NS = std::chrono::nanoseconds(static_cast<long long>(SECOND_NS / LCD_REFRESH_RATE_HZ));
+constexpr auto VBLANK_REQUEST_RATE_NS = std::chrono::nanoseconds(static_cast<long long>(SECOND_NS / VBLANK_REQUEST_RATE_HZ));
 
 int Cpu::step() {
     current_opcode = fetch_and_inc();
@@ -40,12 +40,12 @@ void Cpu::run() {
     while(running) {
         auto frame_start_time = std::chrono::steady_clock::now();
         
-        //TODO: check if we want this before or after interrupts
         while(SDL_PollEvent(&event)) {
             if(event.type == SDL_QUIT) {
                 running = false;
             }
         }
+        //TODO: check if we want this before or after interrupts
         poll_input();
         
         int mcycles = 0;
@@ -60,6 +60,7 @@ void Cpu::run() {
         if(queued_interrupt_enable && current_opcode != EI_OPCODE) {ime = true; queued_interrupt_enable = false;}
 
         // for now we just in case we keep the checks that we actually want to run the interrupt
+        // interrupt calling takes 5 mcycles
         if(pending_interrupt_flag && check_and_handle_interrupts()) mcycles += 5;
 
         // ----------------------------- TICK DIV ---------------------------------
@@ -95,9 +96,9 @@ void Cpu::run() {
         // ------------------------------------------------------------------------
 
 
-        // check if we need to draw a new frame
-        if(current_time - last_lcd_refresh > LCD_REFRESH_RATE_NS) {
-            last_lcd_refresh += LCD_REFRESH_RATE_NS;
+        // ----------------------------- VBLANK INTERRUPT -------------------------------
+        if(current_time - last_lcd_refresh > VBLANK_REQUEST_RATE_NS) {
+            last_lcd_refresh += VBLANK_REQUEST_RATE_NS;
             request_interrupt(LCD_INTERRUPT_CONTROL_BIT);
         }
 
