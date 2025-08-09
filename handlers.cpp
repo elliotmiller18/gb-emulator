@@ -314,7 +314,7 @@ int Cpu::rst() {
     // remember that this is NOT ten, twenty, thirty, but hex numbers that look obnoxiously like decimal numbers
     memory.write_word_and_dec_sp(PC);
     uint16_t addr = (msb_8(current_opcode) - 0xC) * 0x10;
-    if(lsb_8(current_opcode) == 0xF) addr += 8;
+    if(lsb_8(current_opcode) == 0xF) addr += 0x8;
     registers.write(PC, addr);
     return 4;
 }

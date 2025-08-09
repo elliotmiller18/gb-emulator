@@ -51,7 +51,7 @@ static constexpr opcode_handler opcode_table[NUM_1_BYTE_OPCODES] = {
 /*2c, INC :*/       &Cpu::step8_handler,
 /*2d, DEC :*/       &Cpu::step8_handler,
 /*2e, LD L, n8*/    &Cpu::ld_imm8_to_dest8,
-/*2f, RRA*/         &Cpu::complement_acc,
+/*2f, cpl*/         &Cpu::complement_acc,
 /*30, JR NC, e8*/   &Cpu::jr,
 /*31, LD SP, d16*/  &Cpu::ld_imm16_to_reg16,
 /*32, LD [HL-] A*/  &Cpu::ld_acc_to_memory,

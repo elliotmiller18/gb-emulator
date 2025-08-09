@@ -3,8 +3,8 @@
 
 // Interrupt handler addresses
 constexpr int VBLANK_IHANDLER = 0x40;
-constexpr int STAT_IHANDLER = 0x48;
-constexpr int LCD_IHANDLER = STAT_IHANDLER;
+constexpr int LCD_IHANDLER = 0x48;
+constexpr int STAT_IHANDLER = LCD_IHANDLER;
 constexpr int TIMER_IHANDLER = 0x50;
 // unused for the forseeable future 
 constexpr int SERIAL_IHANDLER = 0x58;

@@ -154,4 +154,5 @@ int prefixed_ldh_mcycles(int opcode) {
         case 0x2: return 2;
         case 0xA: return 4;
     }
+    throw std::runtime_error("Invalid argument provided to function prefixed_ldh_mcycles");
 }
