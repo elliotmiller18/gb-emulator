@@ -6,8 +6,8 @@
 #include <fstream>
 #include <variant>
 
-Memory::Memory(Registers& registers, const char* filename)
-  : registers(registers)
+Memory::Memory(Registers& registers, const char* filename, Cpu& cpu)
+  : registers(registers), cpu(cpu)
 {
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
@@ -78,6 +78,7 @@ void Memory::write_byte(BinOpt addr, BinOpt8 val) {
     uint16_t unpacked_addr = unpack_addr(addr);
     // writing to div resets it
     if(unpacked_addr == DIV_ADDR) unpacked_value = 0;
+    if(unpacked_addr == BOOT_ROM_MAPPING_CONTORL_ADDR) cpu.booting = false;
 
     memory[unpacked_addr] = unpacked_value;
 }

@@ -16,14 +16,16 @@ public:
     bool stop_mode = false;
     bool halt_mode = false;
     bool buggy_halt_mode = false;
+    // used to test and capture boot rom state
+    bool booting = false;
     /// disabled on boot
     bool ime = false;
     bool debug;
 
     bool queued_interrupt_enable = false;
 
-    Cpu(const char* filename) : registers(Registers()), memory(registers, filename), debug(false) {}
-    Cpu() : registers(Registers()), memory(registers) {}
+    Cpu(const char* filename) : registers(Registers()), memory(registers, filename, *this), debug(false) {}
+    Cpu() : registers(Registers()), memory(registers, *this) {}
     ~Cpu() {}
 
     enum LogicalOperation {

@@ -20,6 +20,8 @@ constexpr uint16_t TIMER_COUNTER_ADDR = 0xFF05;
 constexpr uint16_t TIMER_MODULO_ADDR = 0xFF06;
 constexpr uint16_t TIMER_CONTROL_ADDR = 0xFF07;
 
+constexpr uint16_t BOOT_ROM_MAPPING_CONTORL_ADDR = 0xFF50;
+
 constexpr uint16_t INTERRUPT_FLAG_ADDR = 0xFF0F;
 constexpr uint16_t INTERRUPT_ENABLE_ADDR = 0xFFFF;
 
