@@ -30,7 +30,7 @@ uint16_t Cpu::fetch_and_inc_imm_16() {
 
 uint8_t Cpu::get_imm8_from_bits(int bits) {
     return std::visit([this](auto&& inner) -> uint8_t {
-        using inner_t = decltype(inner);
+        using inner_t = std::decay_t<decltype(inner)>;
         if constexpr(std::is_same_v<Register16, inner_t>)      return memory.read_byte(registers.read(HL));
         else if constexpr (std::is_same_v<Register8, inner_t>) return registers.read_half(inner);
         else throw std::invalid_argument("Invalid RegisterOpt");
