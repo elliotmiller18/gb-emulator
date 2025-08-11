@@ -2,6 +2,8 @@
 
 #include "register.h"
 #include "memory.h"
+#include "graphics.h"
+#include <vector>
 #include <array>
 #include <variant>
 #include <stdexcept>
@@ -13,6 +15,7 @@ public:
     Registers registers;
     Memory memory;
     int current_opcode;
+    int batched_cycles = 0;
     bool stop_mode = false;
     bool halt_mode = false;
     bool buggy_halt_mode = false;
@@ -51,6 +54,13 @@ public:
     int step();
     bool check_and_handle_interrupts();
     void boot();
+    void cycle(int mcycles);
+
+// GRAPHICS
+    void graphics_handler();
+    void render();
+    std::vector<uint16_t> oam_scan_line();
+    void oam_dma_transfer(uint8_t source_addr);
     
 // REGULAR INSTRUCTION HANDLERS
     int invalid_opcode();

@@ -3,21 +3,14 @@
 #include "handler-table.h"
 #include <SDL.h>
 #include <iostream>
-#include <chrono>
 #include <thread>
 
-/// rate (hz) at which the div register is incremented, this is also 1 << 14 or 2^14
-constexpr int MASTER_CLOCK_SPEED_HZ = 4'194'304;
-// the length of one machine cycle
-constexpr double SYSTEM_CLOCK_SPEED_HZ = MASTER_CLOCK_SPEED_HZ / 4;
 constexpr double DIV_TICKRATE_HZ = 16384;
 constexpr double VBLANK_REQUEST_RATE_HZ = 59.7;
-// 1 second (1 billion ns) divided by the increment rate
-constexpr long long SECOND_NS = 1'000'000'000.0;
+
 // note that there is some tiny rounding error here on the subnanosecond level but we can accept that error as 
 // simulating subnanosecond time is challenging
 constexpr auto DIV_TICKRATE_NS = std::chrono::nanoseconds(static_cast<long long>(SECOND_NS / DIV_TICKRATE_HZ));
-constexpr auto SYSTEM_CLOCK_TICKRATE_NS = std::chrono::nanoseconds(static_cast<long long>(SECOND_NS / SYSTEM_CLOCK_SPEED_HZ));
 constexpr auto VBLANK_REQUEST_RATE_NS = std::chrono::nanoseconds(static_cast<long long>(SECOND_NS / VBLANK_REQUEST_RATE_HZ));
 
 int Cpu::step() {
@@ -34,6 +27,9 @@ void Cpu::run() {
     auto last_lcd_refresh = last_div_inc;
     auto lag_time = std::chrono::nanoseconds(0);
     
+    //TODO: debugging remove
+    debug = true;
+
     bool running = true;
     SDL_Event event;
 
@@ -55,6 +51,9 @@ void Cpu::run() {
         //TODO: implement hardware bug here
         else if(buggy_halt_mode) buggy_halt_mode = pending_interrupt_flag;
         else mcycles = step();
+
+        mcycles += batched_cycles;
+        batched_cycles = 0;
 
         // ei enables interrupts only after the instruction following it is executed
         if(queued_interrupt_enable && current_opcode != EI_OPCODE) {ime = true; queued_interrupt_enable = false;}
@@ -114,11 +113,18 @@ void Cpu::run() {
             // if this frame ran for too long (can also accumulate from multiple frames running too long)
             lag_time += frame_runtime - (SYSTEM_CLOCK_TICKRATE_NS * mcycles);
         }
+        //TODO: REMOVE FOR DEBUGGING
+        if(booting) break;
     }
+    print_state();
 }
 
 constexpr uint8_t JOYPAD_STARTING_VAL = 0xFF;
 
 void Cpu::boot() {
     memory.write_byte(JOYPAD_ADDR, JOYPAD_STARTING_VAL);
+}
+
+void Cpu::cycle(int cycles) {
+    batched_cycles += cycles;
 }

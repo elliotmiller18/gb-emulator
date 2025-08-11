@@ -53,6 +53,7 @@ uint16_t Memory::read_word(BinOpt addr) {
 
 uint8_t Memory::read_byte(BinOpt addr) {
     uint16_t address = unpack_addr(addr);
+    if(address == NULL_ADDR) throw std::runtime_error("Trying to read null address");
     return memory[address];
 }
 
@@ -76,9 +77,11 @@ void Memory::write_word_and_dec_sp(BinOpt16 val) {
 void Memory::write_byte(BinOpt addr, BinOpt8 val) {
     uint8_t unpacked_value = registers.unpack_binopt8(val);
     uint16_t unpacked_addr = unpack_addr(addr);
+    if(unpacked_addr == NULL_ADDR) throw std::runtime_error("Trying to write to null address");
     // writing to div resets it
     if(unpacked_addr == DIV_ADDR) unpacked_value = 0;
     if(unpacked_addr == BOOT_ROM_MAPPING_CONTORL_ADDR) cpu.booting = false;
+    if(unpacked_addr == OAM_DMA_ADDR) cpu.oam_dma_transfer(unpacked_value);
 
     memory[unpacked_addr] = unpacked_value;
 }
