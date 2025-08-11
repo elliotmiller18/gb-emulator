@@ -10,8 +10,6 @@ constexpr int TIMER_IHANDLER = 0x50;
 constexpr int SERIAL_IHANDLER = 0x58;
 constexpr int JOYPAD_IHANDLER = 0x60;
 
-
-
 bool Cpu::check_and_handle_interrupts() {
     if(!ime) return false;
     uint8_t interrupt_requested = memory.read_byte(INTERRUPT_FLAG_ADDR); 

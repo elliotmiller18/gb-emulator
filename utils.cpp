@@ -115,6 +115,18 @@ uint8_t set_or_reset_bit(int bit, uint8_t arg, bool set) {
     return set ? set_bit(bit, arg) : reset_bit(bit, arg);
 }
 
+void reset_bit(int bit, uint8_t* arg) {
+    *arg = reset_bit(bit, *arg);
+}
+void set_bit(int bit, uint8_t* arg) {
+    *arg = set_bit(bit, *arg);
+}
+
+void set_or_reset_bit(int bit, uint8_t* arg, bool set) {
+    *arg = set_or_reset_bit(bit, *arg, set);
+}
+
+
 /// start and end are both inclusive
 int get_bits_in_range(unsigned int target, unsigned int start, unsigned int end) {
     if(start >= 16) throw std::invalid_argument("Simulating on a 16 bit system, start of range invalid");

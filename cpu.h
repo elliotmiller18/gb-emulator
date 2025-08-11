@@ -45,6 +45,8 @@ public:
     uint16_t get_e_or_f_prefixed_ld_addr(int opcode);
     void write_to_dest8(RegisterOpt dest, uint8_t imm8);
     // ime is true and the bitwise and of the two interrupt control bytes != 0 means pending interrupt
+    
+// INTERRUPTS
     bool pending_interrupt();
     void request_interrupt(uint8_t control_bit);
     void poll_input();
@@ -55,6 +57,7 @@ public:
     bool check_and_handle_interrupts();
     void boot();
     void cycle(int mcycles);
+    void sleep(std::chrono::nanoseconds time_to_sleep);
 
 // GRAPHICS
     void graphics_handler();

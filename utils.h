@@ -35,7 +35,7 @@ constexpr uint16_t TIMER_MODULO_ADDR = 0xFF06;
 constexpr uint16_t TIMER_CONTROL_ADDR = 0xFF07;
 
 constexpr uint16_t LCD_CONTROL_ADDR = 0xFF40;
-constexpr uint16_t LCD_STATUS_ADDR = 0xFF41;
+constexpr uint16_t LCD_STAT_ADDR = 0xFF41;
 constexpr uint16_t LCD_Y_COORDINATE_ADDR = 0xFF44;
 constexpr uint16_t LCD_LY_COMPARE_ADDR = 0xFF45;
 constexpr address_t OAM_DMA_ADDR = 0xFF46;
@@ -63,14 +63,17 @@ int msb_16(uint16_t arg);
 int lsb_16(uint16_t arg);
 int msb_8(uint8_t arg);
 int lsb_8(uint8_t arg);
+uint16_t combine_bytes(uint8_t msb, uint8_t lsb);
 uint8_t reset_bit(int bit, uint8_t arg);
+void reset_bit(int bit, uint8_t* arg);
 uint8_t set_bit(int bit, uint8_t arg);
+void set_bit(int bit, uint8_t* arg);
 uint8_t set_or_reset_bit(int bit, uint8_t arg, bool set);
+void set_or_reset_bit(int bit, uint8_t* arg, bool set);
 int get_bits_in_range(unsigned int target, unsigned int start, unsigned int end);
+bool get_bit(int target, int position);
 
 int arith8_mcycles(int opcode);
 int prefixed_ldh_mcycles(int opcode);
-uint16_t combine_bytes(uint8_t msb, uint8_t lsb);
 Register16 get_register16_from_opcode(int bits);
-bool get_bit(int target, int position);
 RegisterOpt get_dest8_from_bits(int bits);

@@ -51,6 +51,9 @@ void Cpu::run() {
         //TODO: implement hardware bug here
         else if(buggy_halt_mode) buggy_halt_mode = pending_interrupt_flag;
         else mcycles = step();
+        
+        // check if there's an interrupt AFTER the instruction executes
+        pending_interrupt_flag = pending_interrupt();
 
         mcycles += batched_cycles;
         batched_cycles = 0;
@@ -95,7 +98,7 @@ void Cpu::run() {
         // ------------------------------------------------------------------------
 
 
-        // ----------------------------- VBLANK INTERRUPT -------------------------------
+        // ----------------------------- VBLANK INTERRUPT -------------------------
         if(current_time - last_lcd_refresh > VBLANK_REQUEST_RATE_NS) {
             last_lcd_refresh += VBLANK_REQUEST_RATE_NS;
             request_interrupt(LCD_INTERRUPT_CONTROL_BIT);
@@ -107,7 +110,7 @@ void Cpu::run() {
         // throttle to normal time
         auto time_to_sleep = (SYSTEM_CLOCK_TICKRATE_NS * mcycles) - frame_runtime - lag_time;
         if(time_to_sleep > std::chrono::nanoseconds(0)) {
-            std::this_thread::sleep_for(time_to_sleep);
+            sleep(time_to_sleep);
             lag_time = std::chrono::nanoseconds(0);
         } else {
             // if this frame ran for too long (can also accumulate from multiple frames running too long)
@@ -127,4 +130,8 @@ void Cpu::boot() {
 
 void Cpu::cycle(int cycles) {
     batched_cycles += cycles;
+}
+
+void Cpu::sleep(std::chrono::nanoseconds time_to_sleep) {
+    std::this_thread::sleep_for(time_to_sleep);
 }
