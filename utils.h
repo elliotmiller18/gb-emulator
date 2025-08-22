@@ -1,11 +1,11 @@
 #pragma once
 #include "register.h"
-#include <cstdint>
+#include "io_ports.h"
 #include <chrono>
 
-// for some reason I didn't think to do this until months into development, so there are a lot of 
-// uint16_t's where there should be address_t, sorry 
-using address_t = uint16_t;
+
+// 2 bits per pixel
+using scanline_t = std::bitset<SCREEN_WIDTH * 2>;
 
 //shared constants
 /// rate (hz) at which the div register is incremented, this is also 1 << 14 or 2^14
@@ -25,25 +25,11 @@ constexpr int VERTICAL_VAL8_END = 5;
 constexpr int HORIZONTAL_DEST8_START_BIT = 4;
 constexpr int HORIZONTAL_DEST8_END_BIT = 5;
 
+constexpr int SCREEN_WIDTH = 160;
+constexpr int SCREEN_HEIGHT = 144;
+
 // the start of not usable memory
-constexpr uint16_t NULL_ADDR = 0xFE00;
-
-constexpr uint16_t JOYPAD_ADDR = 0xFF00;
-constexpr uint16_t DIV_ADDR = 0xFF04;
-constexpr uint16_t TIMER_COUNTER_ADDR = 0xFF05;
-constexpr uint16_t TIMER_MODULO_ADDR = 0xFF06;
-constexpr uint16_t TIMER_CONTROL_ADDR = 0xFF07;
-
-constexpr uint16_t LCD_CONTROL_ADDR = 0xFF40;
-constexpr uint16_t LCD_STAT_ADDR = 0xFF41;
-constexpr uint16_t LCD_Y_COORDINATE_ADDR = 0xFF44;
-constexpr uint16_t LCD_LY_COMPARE_ADDR = 0xFF45;
-constexpr address_t OAM_DMA_ADDR = 0xFF46;
-
-constexpr uint16_t BOOT_ROM_MAPPING_CONTORL_ADDR = 0xFF50;
-
-constexpr uint16_t INTERRUPT_FLAG_ADDR = 0xFF0F;
-constexpr uint16_t INTERRUPT_ENABLE_ADDR = 0xFFFF;
+constexpr address_t NULL_ADDR = 0xFE00;
 
 //opcodes
 constexpr uint16_t RETI_OPCODE = 0xD9;

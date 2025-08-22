@@ -2,13 +2,13 @@
 
 #include "register.h"
 #include "memory.h"
-#include "graphics.h"
 #include <vector>
 #include <array>
 #include <variant>
 #include <stdexcept>
 
-inline constexpr int NUM_1_BYTE_OPCODES = 256;
+constexpr int NUM_1_BYTE_OPCODES = 256;
+struct GraphicsObject;
 
 class Cpu {
 public:
@@ -61,9 +61,11 @@ public:
 
 // GRAPHICS
     void graphics_handler();
-    void render();
-    std::vector<uint16_t> oam_scan_line();
+    void draw_line();
+    void draw_objects(scanline_t& scanline, std::vector<GraphicsObject>& objects) const;
+    std::vector<GraphicsObject> oam_scan_line() const;
     void oam_dma_transfer(uint8_t source_addr);
+    inline uint8_t get_lcd_control() const;
     
 // REGULAR INSTRUCTION HANDLERS
     int invalid_opcode();

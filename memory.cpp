@@ -28,7 +28,7 @@ Memory::Memory(Registers& registers, const char* filename, Cpu& cpu)
 
 Memory::~Memory() {}
 
-uint16_t Memory::unpack_addr(BinOpt addr) {
+uint16_t Memory::unpack_addr(BinOpt addr) const {
     if(BinOpt16* unpacked = std::get_if<BinOpt16>(&addr)) {
         return registers.unpack_binopt16(*unpacked);
     } else {
@@ -42,7 +42,7 @@ uint16_t Memory::read_word_and_inc_sp() {
     return data;
 }
 
-uint16_t Memory::read_word(BinOpt addr) {
+uint16_t Memory::read_word(BinOpt addr) const {
     uint16_t unpacked_addr = unpack_addr(addr);
 
     uint16_t lower_byte = read_byte(unpacked_addr);
@@ -51,7 +51,7 @@ uint16_t Memory::read_word(BinOpt addr) {
     return (upper_byte << 8) | lower_byte;
 }
 
-uint8_t Memory::read_byte(BinOpt addr) {
+uint8_t Memory::read_byte(BinOpt addr) const {
     uint16_t address = unpack_addr(addr);
     if(address == NULL_ADDR) throw std::runtime_error("Trying to read null address");
     return memory[address];

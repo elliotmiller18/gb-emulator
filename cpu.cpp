@@ -98,6 +98,9 @@ void Cpu::run() {
         // ------------------------------------------------------------------------
 
 
+        //TODO: FIX THIS, this interrupt is ACTUALLY triggered by the PPU entering mode 1.
+        // the PPU enters mode 1 following the timing we have here, so this will technically
+        // work but it's extremely brittle
         // ----------------------------- VBLANK INTERRUPT -------------------------
         if(current_time - last_lcd_refresh > VBLANK_REQUEST_RATE_NS) {
             last_lcd_refresh += VBLANK_REQUEST_RATE_NS;

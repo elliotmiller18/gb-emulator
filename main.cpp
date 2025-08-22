@@ -16,7 +16,8 @@ int main() {
         "GB Emulator",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        160, 144,  // Game Boy resolution
+        SCREEN_WIDTH,
+        SCREEN_HEIGHT,
         SDL_WINDOW_SHOWN
     );
 
