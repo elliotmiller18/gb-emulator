@@ -5,6 +5,8 @@
 
 
 // 2 bits per pixel
+constexpr int SCREEN_WIDTH = 160;
+constexpr int SCREEN_HEIGHT = 144;
 using scanline_t = std::bitset<SCREEN_WIDTH * 2>;
 
 //shared constants
@@ -24,9 +26,6 @@ constexpr int VERTICAL_VAL8_START = 3;
 constexpr int VERTICAL_VAL8_END = 5;
 constexpr int HORIZONTAL_DEST8_START_BIT = 4;
 constexpr int HORIZONTAL_DEST8_END_BIT = 5;
-
-constexpr int SCREEN_WIDTH = 160;
-constexpr int SCREEN_HEIGHT = 144;
 
 // the start of not usable memory
 constexpr address_t NULL_ADDR = 0xFE00;
