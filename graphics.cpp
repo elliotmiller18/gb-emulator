@@ -16,16 +16,41 @@ uint8_t Cpu::get_lcd_control() const {
     return memory.read_byte(LCD_CONTROL_ADDR);
 }
 
-void Cpu::graphics_handler() {
-    //TODO: finish this, this is all graphics behavior per CPU cycle
-    uint8_t lcd_status = memory.read_byte(LCD_STAT_ADDR);
-    uint8_t new_lcd_status = lcd_status;
+// this is called once per cycle
+void Cpu::graphics_handler(int dots) {
+    if(dots > DOTS_PER_SCANLINE * LAST_VBLANK_SCANLINE) throw std::runtime_error("Invalid number of dots in graphics_handler");
+    uint8_t new_lcd_status = memory.read_byte(LCD_STAT_ADDR);
+
     // sets or resets the lyc to ly comparison bit depneding on whether or not the LYC or LC MMIO addr are the same
-    new_lcd_status = set_or_reset_bit(LYC_EQ_LY_BIT, lcd_status, 
+    new_lcd_status = set_or_reset_bit(
+        LYC_EQ_LY_BIT, new_lcd_status, 
         memory.read_byte(LCD_LY_ADDR) == memory.read_byte(LCD_LY_COMPARE_ADDR)
     );
-    //TODO: make this actually reflect the state of the PPU
-    bool ppu = false;
+
+    int ppu = 0;
+
+    //TODO: check if we need to be setting the stat line 
+    if(memory.read_byte(LCD_LY_ADDR) >= FIRST_VBLANK_SCANLINE) {
+        //Vblank begins
+        ppu = 1;
+    } else if(dots % DOTS_PER_SCANLINE == MINIMUM_MODE_3_TIME + DOTS_PER_OAM_SCAN) {
+        // this is hacky but it means mode 3 ends and hblank starts
+        ppu = 0;
+    } else if(dots % DOTS_PER_SCANLINE == DOTS_PER_OAM_SCAN) {
+        // oam scan ends and mode 3 starts
+        ppu = 3;
+    } else if(dots % DOTS_PER_SCANLINE == 0) {
+        // oam scan starts
+        ppu = 2;
+        ++memory.memory[LCD_LY_ADDR];
+        if(memory.read_byte(LCD_LY_ADDR) >= LAST_VBLANK_SCANLINE) memory.memory[LCD_LY_ADDR] = 0;
+    }
+    // set bottom 2 bits
+    new_lcd_status &= ~(0b11);
+    new_lcd_status |= ppu;
+
+    memory.write_byte(LCD_STAT_ADDR, new_lcd_status);
+    //TODO: actually draw to the screen here
 }
 
 //gets a tile from a specific line of a tile
@@ -33,14 +58,10 @@ int get_palette_index(int x, uint16_t data) {
     return (get_bit(data, x) << 1) | get_bit(data, x + 7);
 }
 
-void Cpu::draw_line() {
+void Cpu::draw_tilemap(scanline_t& scanline) const {
     uint8_t lcd_control = get_lcd_control();
-    if(!get_bit(lcd_control, LCD_PPU_ENABLE_BIT)) return;
-
-    std::vector<GraphicsObject> object = oam_scan_line();
-    // 2 bits per pixel
-    scanline_t scanline;
-    draw_objects(scanline, object);
+    
+    //TODO: finish
 }
 
 void Cpu::draw_objects(scanline_t& scanline, std::vector<GraphicsObject>& objects) const {

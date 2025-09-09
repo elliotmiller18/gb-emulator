@@ -33,6 +33,11 @@ constexpr int PRIORITY_BIT = 7; //OAM attribute bit
 constexpr int OAM_SIZE = 160;
 constexpr auto DOT_SPEED_NS = SYSTEM_CLOCK_TICKRATE_NS;
 constexpr int DOTS_PER_OAM_SCAN = 80;
+constexpr int DOTS_PER_SCANLINE = 456;
+constexpr int DOTS_PER_VBLANK = DOTS_PER_SCANLINE * 10;
+constexpr int MINIMUM_MODE_3_TIME = 172;
+constexpr int FIRST_VBLANK_SCANLINE = 144;
+constexpr int LAST_VBLANK_SCANLINE = 153;
 
 constexpr int OBJECT_X_OFFSET = 8;
 constexpr int OBJECT_Y_OFFSET = 16;

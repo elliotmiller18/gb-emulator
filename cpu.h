@@ -2,6 +2,7 @@
 
 #include "memory.h"
 #include "utils.h"
+#include <SDL.h>
 #include <vector>
 #include <array>
 #include <variant>
@@ -12,6 +13,9 @@ struct GraphicsObject;
 
 class Cpu {
 public:
+    // we can stop the OOP NOW!!!
+    static SDL_Window* window;
+    
     Registers registers;
     Memory memory;
     int current_opcode;
@@ -60,9 +64,10 @@ public:
     void sleep(std::chrono::nanoseconds time_to_sleep);
 
 // GRAPHICS
-    void graphics_handler();
-    void draw_line();
+    // this takes in dot since last 0 period
+    void graphics_handler(int dots);
     void draw_objects(scanline_t& scanline, std::vector<GraphicsObject>& objects) const;
+    void draw_tilemap(scanline_t& scanline) const;
     std::vector<GraphicsObject> oam_scan_line() const;
     void oam_dma_transfer(uint8_t source_addr);
     inline uint8_t get_lcd_control() const;
